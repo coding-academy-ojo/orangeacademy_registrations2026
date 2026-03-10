@@ -1,0 +1,134 @@
+[
+    {
+        "city": "Al ‘Aqabah", 
+        "lat": "29.5167", 
+        "lng": "35.0000", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Al ‘Aqabah", 
+        "capital": "admin", 
+        "population": "140000", 
+        "population_proper": "140000"
+      }, 
+      {
+        "city": "Al Mafraq", 
+        "lat": "32.2833", 
+        "lng": "36.2333", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Al Mafraq", 
+        "capital": "admin", 
+        "population": "57118", 
+        "population_proper": "57118"
+      }, 
+      {
+        "city": "Amman", 
+        "lat": "31.9500", 
+        "lng": "35.9333", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Al ‘Āşimah", 
+        "capital": "primary", 
+        "population": "4007526", 
+        "population_proper": "4007526"
+      }, 
+      {
+        "city": "Aţ Ţafīlah", 
+        "lat": "30.8375", 
+        "lng": "35.6042", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Aţ Ţafīlah", 
+        "capital": "admin", 
+        "population": "25429", 
+        "population_proper": "25429"
+      }, 
+      {
+        "city": "Ma‘ān", 
+        "lat": "30.1920", 
+        "lng": "35.7360", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Ma‘ān", 
+        "capital": "admin", 
+        "population": "50350", 
+        "population_proper": "50350"
+      }, 
+      {
+        "city": "Irbid", 
+        "lat": "32.5556", 
+        "lng": "35.8500", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Irbid", 
+        "capital": "admin", 
+        "population": "1088100", 
+        "population_proper": "1088100"
+      }, 
+      {
+        "city": "‘Ajlūn", 
+        "lat": "32.3325", 
+        "lng": "35.7517", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "‘Ajlūn", 
+        "capital": "admin", 
+        "population": "", 
+        "population_proper": ""
+      }, 
+      {
+        "city": "Jarash", 
+        "lat": "32.2723", 
+        "lng": "35.8914", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Jarash", 
+        "capital": "admin", 
+        "population": "50745", 
+        "population_proper": "50745"
+      },
+      {
+        "city": "As Salţ", 
+        "lat": "32.0333", 
+        "lng": "35.7333", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Al Balqā’", 
+        "capital": "admin", 
+        "population": "88900", 
+        "population_proper": "88900"
+      }, 
+      {
+        "city": "Mādabā", 
+        "lat": "31.7167", 
+        "lng": "35.8000", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Ma’dabā", 
+        "capital": "admin", 
+        "population": "", 
+        "population_proper": ""
+      }, 
+      {
+        "city": "Al Karak", 
+        "lat": "31.1833", 
+        "lng": "35.7000", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Al Karak", 
+        "capital": "admin", 
+        "population": "21678", 
+        "population_proper": "21678"
+      },
+      {
+        "city": "Az Zarqā’", 
+        "lat": "32.0833", 
+        "lng": "36.1000", 
+        "country": "Jordan", 
+        "iso2": "JO", 
+        "admin_name": "Az Zarqā’", 
+        "capital": "admin", 
+        "population": "481300", 
+        "population_proper": "481300"
+      }
+]

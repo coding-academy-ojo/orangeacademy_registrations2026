@@ -1,0 +1,369 @@
+body{background-color: #000;overflow-x: hidden;}
+
+.map-orange{margin: 50px auto;position: relative;}
+
+/*start footer*/
+footer{padding: 15px;text-align: center;border-top: 1px solid;}
+
+footer .copyright{display: inline-block;color: #fff}
+
+footer .Created{display: inline-block;color: #ff7900;}
+/*End footer*/
+
+/*start check box*/
+.colorsche{color: #fff!important;}
+
+.check-container{
+  margin: 300px auto;
+  position: absolute;
+  top: 30%;
+  width: 40%;
+  left: 58%;}
+
+  label.check-box {
+    margin: 0.1rem 1rem 0.8rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    line-height: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    width: 100%;
+  }
+  .check-box span{color:#ff7900;font-weight: 100;}
+  input[type="checkbox"] {
+    position: relative;
+    cursor: pointer;
+    height: 1.2rem;
+    background: white;
+    outline: none;
+    margin-right: 0.8rem;
+  }
+  
+  input[type="checkbox"]:before {
+    content: "";
+    position: absolute;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #7f1414;
+    cursor: pointer;
+    color: #fff;
+  }
+ .newstylemodal{
+  opacity: 1!important;
+  display: block!important;
+  background-color: #0000007d!important;
+ }
+
+ .contmodalstyle{top: 40%!important;}
+
+  input[type="checkbox"]:after {
+    content: "";
+    transition: .25s ease-in-out;
+    position: absolute;
+    z-index: 1;
+    width: 1rem;
+    height: 1rem;
+    border: 0.1rem solid #7f1414;
+  }
+  
+  input[type="checkbox"]:checked:after {
+    transform: rotate(-45deg);
+    height: .5rem;
+    border-color: #ff7900;
+    border-top-color: transparent;
+    border-right-color: transparent;
+  }
+  /*End check box*/
+
+/*start slide modal*/
+.modal-map-orange .modal-dialog{
+  position: relative;
+  width: 70% !important;
+  margin: 5rem auto !important;
+  pointer-events: none !important;
+}
+.text-modal-slide{
+  margin-left: 20px;
+  text-align: justify;
+}
+@media (min-width: 576px){
+.modal-map-orange .modal-dialog{
+  max-width: 70%;
+  margin: 5rem auto;
+}
+}
+
+.container-img-slider {
+display: flex;
+height: 25rem;
+}
+
+.thumbnails {
+display: flex;
+flex-direction: column;
+list-style: none;
+align-items: flex-end;
+}
+.thumbnails li {
+flex: auto;
+}
+.thumbnails a {
+display: block;
+}
+.thumbnails img {
+width: 22vmin;
+height: 5.1rem;
+-o-object-fit: cover;
+object-fit: cover;
+-o-object-position: top;
+object-position: top;
+}
+
+.slides {
+overflow: hidden;
+width: 72vmin;
+list-style: none;
+padding: 0;
+margin: 0;
+}
+.slides li {
+  width: 50vmin;
+  height: 94.5%;
+  position: absolute;
+  z-index: 1;
+}
+.slides img {
+  height: 100%;
+  max-width: 100%;
+-o-object-fit: cover;
+   object-fit: cover;
+-o-object-position: top;
+   object-position: top;
+}
+
+.slides li:target {
+z-index: 3;
+-webkit-animation: slide 1s 1;
+}
+
+.slides li:not(:target) {
+-webkit-animation: hidden 1s 1;
+}
+
+@-webkit-keyframes slide {
+0% {
+  transform: translateY(-100%);
+}
+100% {
+  transform: translateY(0%);
+}
+}
+
+@keyframes slide {
+0% {
+  transform: translateY(-100%);
+}
+100% {
+  transform: translateY(0%);
+}
+}
+@-webkit-keyframes hidden {
+0% {
+  z-index: 2;
+}
+100% {
+  z-index: 2;
+}
+}
+@keyframes hidden {
+0% {
+  z-index: 2;
+}
+100% {
+  z-index: 2;
+}
+}
+/*end slide modal*/
+
+
+/*modal*/
+
+#content-wrapper{
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
+margin-top: 30px;
+}
+
+.column{
+width: 50%;
+padding: 10px;
+
+}
+
+#featured{
+  height: 200px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid black;
+  transform: translate(9%, -5%);
+  width: 428px;
+}
+
+.thumbnail{
+object-fit: cover;
+max-width: 180px;
+max-height: 100px;
+cursor: pointer;
+opacity: 0.5;
+margin: 5px;
+border: 2px solid black;
+
+}
+
+.thumbnail:hover{
+opacity:1;
+}
+
+.active{
+opacity: 1;
+}
+
+#slide-wrapper{
+max-width: 500px;
+display: flex;
+min-height: 100px;
+align-items: center;
+}
+
+#slider{
+width: 440px;
+display: flex;
+flex-wrap: nowrap;
+overflow-x: auto;
+
+}
+
+#slider::-webkit-scrollbar {
+  width: 8px;
+
+}
+
+#slider::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+
+}
+
+#slider::-webkit-scrollbar-thumb {
+background-color:#ff7900;
+outline: 1px solid slategrey;
+ border-radius: 100px;
+
+}
+
+
+.arrow{
+width: 30px;
+height: 30px;
+cursor: pointer;
+transition: .3s;
+margin-left: 6px;
+}
+
+.arrow:hover{
+opacity: .5;
+width: 35px;
+height: 35px;
+}
+/*modal*/
+/*new check*/
+
+.new_checkbox{
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(850%, 120%);
+}
+
+.new_checkbox ul{width:150%}
+
+.new_checkbox ul li{padding: 0.5rem 0.75rem;}
+
+.new_checkbox .material-switch{display: inline;float: right;clear: both;}
+.material-switch > input[type="checkbox"] {
+  display: none;   
+}
+
+.material-switch > label {
+  cursor: pointer;
+  height: 0px;
+  position: relative; 
+  width: 40px;  
+}
+
+.material-switch > label::before {
+  background: rgb(0, 0, 0);
+  box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  content: '';
+  height: 16px;
+  margin-top: -8px;
+  position:absolute;
+  opacity: 0.3;
+  transition: all 0.4s ease-in-out;
+  width: 40px;
+}
+.material-switch > label::after {
+  background: rgb(255, 255, 255);
+  border-radius: 16px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+  content: '';
+  height: 24px;
+  left: -4px;
+  margin-top: -8px;
+  position: absolute;
+  top: -4px;
+  transition: all 0.3s ease-in-out;
+  width: 24px;
+}
+.material-switch > input[type="checkbox"]:checked + label::before {
+  background: inherit;
+  opacity: 0.5;
+}
+.material-switch > input[type="checkbox"]:checked + label::after {
+  background: inherit;
+  left: 20px;
+}
+/*new check*/
+/*animation*/
+.animationmap{
+  width: 100px !important;
+  transform: translate(1100%, 100px);
+  margin: 0;
+}
+.cover_photo_map{
+  width: 200px;
+    height: 200px;
+    position: relative;
+    top: 0;
+    left: 80%;
+    transform: translate(10px, 1px);
+    cursor: pointer;
+}
+.cover_photo_map img{
+  max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+.cover_photo_map img:hover{
+  border: 1px solid #cccccc7d;
+}
+.text-colomss{
+  margin-bottom: 162px;
+    text-align: left;
+    margin-left: -161px;
+}

@@ -1,0 +1,49 @@
+# Product Requirements Document (PRD)
+**Project:** Academy Registration System
+
+## 1. Product Overview
+The Academy Registration System is a comprehensive web application designed to manage the end-to-end student onboarding and evaluation process. It provides a multi-step registration workflow for students, alongside a powerful admin dashboard to manage admissions, documents, questionnaires, and assessments.
+
+## 2. Target Audience
+* **Students/Candidates:** Individuals applying to join an academy cohort.
+* **Administrators / Staff:** Academy staff responsible for verifying documents, grading assessments, and managing enrollments.
+* **Super Administrators:** System owners who manage staff access and system configurations.
+
+## 3. Core Features & Capabilities
+
+### 3.1 Student Portal
+The student-facing side of the application features a guided, multi-step registration wizard:
+- **Authentication:** Secure registration and login functionality.
+- **Profile Management:** Collection of detailed personal information (English/Arabic names, demographics, contact details).
+- **Academy & Cohort Selection (Enrollment):** Students can choose which specific academy and intake (cohort) they wish to join.
+- **Document Uploads:** Secure upload of required documents (e.g., ID, transcripts) mapped to dynamically generated document requirements.
+- **Questionnaires:** Custom forms required during the onboarding process to collect additional student context.
+- **Assessments (Testing):** Timed or untimed tests/quizzes that a student must complete as part of the application or curriculum.
+
+### 3.2 Admin Dashboard
+A secure backend portal for staff to manage the entire ecosystem:
+- **Dashboard Overview:** High-level metrics of system activity (user signups, active cohorts, pending documents).
+- **User Management:** Highly capable filtering (by name, phone, gender, academy, and date) to find and review student profiles.
+- **Enrollment Management:** Updating the status of student applications (e.g., Pending, Accepted, Rejected).
+- **Document Verification:** Workflow to review submitted documents, mark them as Verified or Rejected, and automatically notify students of rejections with a required action.
+- **Academy & Cohort Management:** CRUD operations to define Academies and their respective run cycles (Cohorts) with start and end dates.
+- **Assessment Engine:** Tools to create tests, manage questions (multiple-choice or text), and grade student submissions.
+- **Questionnaire Builder:** Interface to construct and review dynamic forms and student answers.
+- **Staff Access Control:** Super administrators can provision new Admin accounts, which securely triggers automated credential delivery via email.
+
+## 4. Technical Architecture
+* **Framework:** Laravel (PHP)
+* **Database:** MySQL / Relational mapping via Eloquent ORM.
+* **Frontend UI:** Blade templating using Bootstrap (indicated by `row`, `col-md`, `g-*` classes).
+* **Architecture Pattern:** Standard MVC (Model-View-Controller) utilizing Laravel routing, middleware authentication (`auth:admin`, `guest`), and form validation.
+
+## 5. Security & Compliance
+- **Authentication Guards:** Separation of concerns using distinct guards for `web` (students) and `admin` (staff).
+- **CSRF Protection:** Standard Laravel CSRF tokens on all POST/PUT/DELETE requests.
+- **Data Integrity:** Strict validation rules on all incoming requests (e.g., passwords, emails).
+- **File Security:** Uploaded documents are securely mapped, with access potentially gated by user/admin privileges.
+
+## 6. Future Roadmap / Suggestions
+- **Automated Grading:** Auto-score assessments if they consist entirely of multiple-choice answers.
+- **Role-Based Access Control (RBAC):** Expand `admin` and `super_admin` roles to include granular permissions (e.g., "Grader", "Document Reviewer").
+- **Reporting & Export:** Add CSV/Excel exports for student data, assessment grades, and enrollment metrics for external BI tools.
