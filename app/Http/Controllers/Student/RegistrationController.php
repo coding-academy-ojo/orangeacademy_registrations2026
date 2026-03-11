@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Academy, Document, Assessment, AssessmentSubmission, AssessmentAnswer, Questionnaire, Activity};
+use App\Models\{Academy, Document, Assessment, AssessmentSubmission, AssessmentAnswer, Questionnaire, Activity, CoursatCertificate};
 use App\Notifications\RegistrationSubmittedNotification;
 use Illuminate\Http\Request;
 
@@ -10,8 +10,12 @@ class RegistrationController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user()->load(['profile', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'documents']);
-        return view('student.dashboard', compact('user'));
+        $user = auth()->user()->load(['profile', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'documents.documentRequirement']);
+
+        // Find rejected documents
+        $rejectedDocuments = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->get();
+
+        return view('student.dashboard', compact('user', 'rejectedDocuments'));
     }
 
     public function step($step)
@@ -25,6 +29,12 @@ class RegistrationController extends Controller
                 ->with('error', 'Please verify your email address first.');
         }
 
+        // Check if phone is verified before allowing access
+        if ($user->profile && !$user->profile->phone_verified) {
+            return redirect('/student/verify-phone')
+                ->with('error', 'Please verify your phone number first.');
+        }
+
         // --- Strict Progression Validation ---
         $completedSteps = $this->getCompletedSteps($user);
 
@@ -35,8 +45,8 @@ class RegistrationController extends Controller
             if (!in_array($requiredPreviousStep, $completedSteps)) {
                 // Find the highest step they CAN access (which is max completed + 1)
                 $maxAllowed = max($completedSteps) + 1;
-                // Cap it at the actual max step (6)
-                $redirectStep = min($maxAllowed, 6);
+                // Cap it at the actual max step (7)
+                $redirectStep = min($maxAllowed, 7);
 
                 return redirect()->route('student.step', $redirectStep)
                     ->with('error', "Please complete Step $redirectStep first before proceeding.");
@@ -54,20 +64,24 @@ class RegistrationController extends Controller
                 $data['requirements'] = \App\Models\DocumentRequirement::all();
                 break;
             case 3:
+                // Orange Coursat Step
+                $data['certificates'] = $user->coursatCertificates->keyBy('course_name');
+                break;
+            case 4:
                 $data['academies'] = Academy::with(['cohorts' => fn($q) => $q->where('status', 'active')])->get();
                 $data['enrollment'] = $user->enrollments()->first();
                 break;
-            case 4:
+            case 5:
                 // Assessments — show published assessments
                 $data['assessments'] = Assessment::where('is_published', true)->withCount('questions')->get();
                 $data['submissions'] = $user->assessmentSubmissions->keyBy('assessment_id');
                 break;
-            case 5:
+            case 6:
                 $data['questionnaire'] = Questionnaire::where('is_published', true)->with('questions')->first();
                 $data['answers'] = $user->answers->keyBy('question_id');
                 break;
-            case 6:
-                $data['user'] = $user->load(['profile', 'documents', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'answers.question']);
+            case 7:
+                $data['user'] = $user->load(['profile', 'documents', 'coursatCertificates', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'answers.question']);
                 break;
         }
 
@@ -83,7 +97,7 @@ class RegistrationController extends Controller
         $completed = [0]; // 0 is always "completed", so they can reach step 1.
 
         // Step 1: Profile
-        if ($user->profile && $user->profile->first_name_en && $user->profile->phone) {
+        if ($user->profile && $user->profile->first_name_en) {
             $completed[] = 1;
         } else {
             return $completed;
@@ -95,37 +109,51 @@ class RegistrationController extends Controller
         $hasAllRequiredDocs = count(array_intersect($requirements->toArray(), $uploadedDocs)) === $requirements->count();
 
         if ($hasAllRequiredDocs) {
+            // New check: if any document (required or optional) is rejected with a reason, step 2 is NOT complete
+            $hasRejection = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->exists();
+            if ($hasRejection) {
+                return $completed;
+            }
             $completed[] = 2;
         } else {
             return $completed;
         }
 
-        // Step 3: Enrollment
-        if ($user->enrollments()->exists()) {
+        // Step 3: Orange Coursat
+        $courses = ['html', 'css', 'javascript'];
+        $uploadedCerts = $user->coursatCertificates()->whereIn('course_name', $courses)->pluck('course_name')->toArray();
+        if (count(array_intersect($courses, $uploadedCerts)) === count($courses)) {
             $completed[] = 3;
         } else {
             return $completed;
         }
 
-        // Step 4: Assessments
-        $activeAssessmentsCount = Assessment::where('is_published', true)->count();
-        $completedAssessmentsCount = $user->assessmentSubmissions()->whereIn('status', ['submitted', 'graded'])->count();
-
-        if ($activeAssessmentsCount === 0 || $completedAssessmentsCount >= $activeAssessmentsCount) {
+        // Step 4: Enrollment
+        if ($user->enrollments()->exists()) {
             $completed[] = 4;
         } else {
             return $completed;
         }
 
-        // Step 5: Questionnaire
+        // Step 5: Assessments
+        $activeAssessmentsCount = Assessment::where('is_published', true)->count();
+        $completedAssessmentsCount = $user->assessmentSubmissions()->whereIn('status', ['submitted', 'graded'])->count();
+
+        if ($activeAssessmentsCount === 0 || $completedAssessmentsCount >= $activeAssessmentsCount) {
+            $completed[] = 5;
+        } else {
+            return $completed;
+        }
+
+        // Step 6: Questionnaire
         $questionnaire = Questionnaire::where('is_published', true)->first();
         if (!$questionnaire) {
-            $completed[] = 5;
+            $completed[] = 6;
         } else {
             $requiredQCount = $questionnaire->questions()->count();
             $answersCount = current(array_filter([$user->answers()->count()])); // just converting 0 to false for logic
             if ($user->answers()->count() >= $requiredQCount) {
-                $completed[] = 5;
+                $completed[] = 6;
             }
         }
 
@@ -143,7 +171,8 @@ class RegistrationController extends Controller
             'second_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
             'third_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
             'last_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
-            'phone' => 'required|string|min:10|max:20|regex:/^[0-9]+$/',
+            'phone' => 'nullable|string|min:10|max:20|regex:/^[0-9]+$/',
+            'id_number' => 'required|numeric|digits:10',
             'gender' => 'required|in:male,female',
             'date_of_birth' => 'required|date|before_or_equal:-15 years|after_or_equal:-100 years',
             'nationality' => 'required|string|max:50',
@@ -171,10 +200,12 @@ class RegistrationController extends Controller
             'second_name_ar.regex' => 'Second name (Arabic) can only contain Arabic letters.',
             'third_name_ar.regex' => 'Third name (Arabic) can only contain Arabic letters.',
             'last_name_ar.regex' => 'Family name (Arabic) can only contain Arabic letters.',
-            'phone.required' => 'Phone number is required.',
             'phone.min' => 'Phone number must be at least 10 digits.',
             'phone.max' => 'Phone number cannot exceed 20 digits.',
             'phone.regex' => 'Please enter a valid phone number (numbers only).',
+            'id_number.required' => 'ID number is required.',
+            'id_number.numeric' => 'ID number must contain only numbers.',
+            'id_number.digits' => 'ID number must be exactly 10 digits.',
             'gender.required' => 'Gender is required.',
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before_or_equal' => 'You must be at least 15 years old.',
@@ -196,6 +227,7 @@ class RegistrationController extends Controller
             'third_name_ar',
             'last_name_ar',
             'phone',
+            'id_number',
             'gender',
             'date_of_birth',
             'nationality',
@@ -256,7 +288,7 @@ class RegistrationController extends Controller
                 // Overwrite or create
                 auth()->user()->documents()->updateOrCreate(
                     ['document_requirement_id' => $reqId],
-                    ['file_path' => $path, 'is_verified' => false]
+                    ['file_path' => $path, 'is_verified' => false, 'rejection_reason' => null]
                 );
             }
 
@@ -270,6 +302,53 @@ class RegistrationController extends Controller
         }
 
         return redirect('/student/registration/step/3')->with('success', 'Documents uploaded successfully!');
+    }
+
+    public function saveCoursat(Request $request)
+    {
+        $user = auth()->user();
+        $certificates = ['html', 'css', 'javascript'];
+        $rules = [];
+        $messages = [];
+
+        foreach ($certificates as $courseName) {
+            $rules["certificate_{$courseName}"] = 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120';
+            $messages["certificate_{$courseName}.mimes"] = "The {$courseName} certificate must be a PDF, JPG, PNG, or WebP.";
+            $messages["certificate_{$courseName}.max"] = "The {$courseName} certificate must not exceed 5MB.";
+        }
+
+        $request->validate($rules, $messages);
+
+        $uploadedAny = false;
+        foreach ($certificates as $courseName) {
+            $inputName = "certificate_{$courseName}";
+            if ($request->hasFile($inputName)) {
+                $path = $request->file($inputName)->store('coursat_certificates/' . $user->id, 'public');
+                $user->coursatCertificates()->updateOrCreate(
+                    ['course_name' => $courseName],
+                    ['file_path' => $path]
+                );
+                $uploadedAny = true;
+            }
+        }
+
+        if ($uploadedAny) {
+            Activity::log([
+                'user_id' => $user->id,
+                'type' => 'coursat',
+                'action' => 'uploaded',
+                'title' => 'Coursat Certificates Uploaded',
+                'description' => 'User uploaded Orange Coursat certificates',
+            ]);
+        }
+
+        // Check if all exactly required 3 certs are uploaded
+        $uploadedCerts = $user->coursatCertificates()->whereIn('course_name', $certificates)->pluck('course_name')->toArray();
+        if (count(array_intersect($certificates, $uploadedCerts)) !== count($certificates)) {
+            return redirect('/student/registration/step/3')->with('error', 'You must upload all 3 certificates (HTML, CSS, JavaScript) to successfully proceed to the next step.');
+        }
+
+        return redirect('/student/registration/step/4')->with('success', 'All 3 certificates validated and uploaded successfully!');
     }
 
     public function saveEnrollment(Request $request)
@@ -301,7 +380,7 @@ class RegistrationController extends Controller
             'properties' => ['cohort_id' => $cohort->id, 'academy_id' => $cohort->academy_id],
         ]);
 
-        return redirect('/student/registration/step/4')->with('success', 'Application submitted!');
+        return redirect('/student/registration/step/5')->with('success', 'Application submitted!');
     }
 
     // --- Assessments (exam taking) ---
@@ -376,7 +455,7 @@ class RegistrationController extends Controller
             'submitted_at' => now()
         ]);
 
-        return redirect('/student/registration/step/4')->with('success', 'Assessment submitted and graded automatically!');
+        return redirect('/student/registration/step/5')->with('success', 'Assessment submitted and graded automatically!');
     }
 
     public function saveQuestionnaire(Request $request)
@@ -412,7 +491,7 @@ class RegistrationController extends Controller
             'description' => 'User completed the questionnaire',
         ]);
 
-        return redirect('/student/registration/step/6')->with('success', 'Questionnaire completed!');
+        return redirect('/student/registration/step/7')->with('success', 'Questionnaire completed!');
     }
 
     public function submitRegistration()
@@ -420,8 +499,8 @@ class RegistrationController extends Controller
         $user = auth()->user();
         $completedSteps = $this->getCompletedSteps($user);
 
-        // To submit, the user must have completed steps 1, 2, 3, 4, and 5
-        $requiredSteps = [1, 2, 3, 4, 5];
+        // To submit, the user must have completed steps 1, 2, 3, 4, 5, and 6
+        $requiredSteps = [1, 2, 3, 4, 5, 6];
         $missingSteps = array_diff($requiredSteps, $completedSteps);
 
         if (!empty($missingSteps)) {
@@ -455,6 +534,24 @@ class RegistrationController extends Controller
             \Illuminate\Support\Facades\Log::info('Registration submitted email failed for: ' . $user->email);
         }
 
-        return redirect('/student/dashboard')->with('success', 'Registration submitted successfully! We have sent a confirmation email to your registered email address.');
+        return redirect()->route('student.registration.success');
+    }
+
+    public function registrationSuccess()
+    {
+        $user = auth()->user()->load(['profile', 'enrollments.cohort.academy', 'documents']);
+        $enrollment = $user->enrollments()->first();
+
+        // Check if there are any rejections
+        $hasRejection = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->exists();
+        if ($hasRejection) {
+            return redirect()->route('student.step', 2)->with('warning', 'One or more of your documents were rejected. Please update them to proceed.');
+        }
+
+        if (!$enrollment || $enrollment->status === 'pending') {
+            return redirect()->route('student.dashboard');
+        }
+
+        return view('student.registration.success', compact('user', 'enrollment'));
     }
 }

@@ -37,7 +37,7 @@ class AdminController extends Controller
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s\-]+$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . Admin::class],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,super_admin'],
+            'role' => ['required', 'in:super_admin,manager,job_coach,coordinator'],
         ], [
             'name.required' => 'Name is required.',
             'name.regex' => 'Name can only contain letters, spaces, and hyphens.',
@@ -92,7 +92,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s\-]+$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(Admin::class)->ignore($admin->id)],
-            'role' => ['required', 'in:admin,super_admin'],
+            'role' => ['required', 'in:super_admin,manager,job_coach,coordinator'],
             'password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ], [
             'name.required' => 'Name is required.',

@@ -95,6 +95,22 @@
         body.lang-ar .student-navbar .navbar-nav {
             flex-direction: row-reverse;
         }
+
+        /* RTL mobile responsive */
+        @media (max-width: 991.98px) {
+            body.lang-ar .admin-sidebar {
+                transform: translateX(100%);
+            }
+
+            body.lang-ar .admin-sidebar.show {
+                transform: translateX(0);
+                box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+            }
+
+            body.lang-ar .admin-main {
+                margin-right: 0 !important;
+            }
+        }
     </style>
     <style>
         :root {

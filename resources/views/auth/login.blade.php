@@ -173,9 +173,64 @@
             line-height: 2;
         }
 
+        @keyframes typing-reveal {
+            from {
+                clip-path: inset(0 100% 0 0);
+                opacity: 0;
+            }
+
+            1% {
+                opacity: 1;
+            }
+
+            to {
+                clip-path: inset(0 0 0 0);
+                opacity: 1;
+            }
+        }
+
         .code-line {
             display: flex;
             gap: 16px;
+            opacity: 0;
+            clip-path: inset(0 100% 0 0);
+            animation: typing-reveal 0.6s steps(30, end) forwards;
+        }
+
+        .code-line:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .code-line:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        .code-line:nth-child(3) {
+            animation-delay: 1.4s;
+        }
+
+        .code-line:nth-child(4) {
+            animation-delay: 1.6s;
+        }
+
+        .code-line:nth-child(5) {
+            animation-delay: 2.2s;
+        }
+
+        .code-line:nth-child(6) {
+            animation-delay: 2.4s;
+        }
+
+        .code-line:nth-child(7) {
+            animation-delay: 3.0s;
+        }
+
+        .code-line:nth-child(8) {
+            animation-delay: 3.2s;
+        }
+
+        .code-line:nth-child(9) {
+            animation-delay: 3.8s;
         }
 
         .ln {
@@ -682,8 +737,8 @@
                     <div class="input-group-custom">
                         <label class="input-label" data-en="Email Address" data-ar="البريد الإلكتروني">Email Address</label>
                         <div class="input-wrap">
-                            <input type="email" name="email" value="{{ old('email') }}" autocomplete="email"
-                                class="auth-input @error('email') is-invalid @enderror" placeholder="you@example.com"
+                            <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email"
+                                class="auth-input email @error('email') is-invalid @enderror" placeholder="you@example.com"
                                 required>
                             <i class="bi bi-envelope input-icon"></i>
                         </div>
@@ -693,8 +748,9 @@
                     <div class="input-group-custom">
                         <label class="input-label" data-en="Password" data-ar="كلمة المرور">Password</label>
                         <div class="input-wrap">
-                            <input type="password" name="password" autocomplete="current-password"
-                                class="auth-input @error('password') is-invalid @enderror" placeholder="••••••••" required>
+                            <input type="password" name="password" id="password" autocomplete="current-password"
+                                class="auth-input password @error('password') is-invalid @enderror" placeholder="••••••••"
+                                required>
                             <i class="bi bi-lock input-icon"></i>
                         </div>
                         @error('password')<span class="invalid-feedback">{{ $message }}</span>@enderror
@@ -724,17 +780,7 @@
         </div>
     </div>
 
-    <script>
-        function setLang(lang) {
-            document.body.classList.toggle('lang-ar', lang === 'ar');
-            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-            document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
-            localStorage.setItem('lang', lang);
-            document.querySelectorAll('[data-en]').forEach(el => {
-                el.textContent = el.getAttribute('data-' + lang) || el.getAttribute('data-en');
-            });
-        }
-        const saved = localStorage.getItem('lang') || 'en';
-        setLang(saved);
+    <script>     function setLang(lang) {         document.body.classList.toggle('lang-ar', lang === 'ar');         document.getElementById('btnEN').classList.toggle('active', lang === 'en');         document.getElementById('btnAR').classList.toggle('active', lang === 'ar');         localStorage.setItem('lang', lang);         document.querySelectorAll('[data-en]').forEach(el => {             el.textContent = el.getAttribute('data-' + lang) || el.getAttribute('data-en');         });     }     const saved = localStorage.getItem('lang') || 'en';     setLang(saved);
+         // Loop typing animation     setInterval(() => {         const lines = document.querySelectorAll('.code-line');         lines.forEach(line => {             line.style.animation = 'none';             void line.offsetWidth; // trigger reflow             line.style.animation = '';         });     }, 6000); // Shorter interval since login code is fewer lines
     </script>
 @endsection

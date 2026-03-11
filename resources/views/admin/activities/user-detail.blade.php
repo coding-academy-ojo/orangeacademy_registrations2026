@@ -22,6 +22,7 @@
                                 'email_verified' => 'Email Verified',
                                 'profile' => 'Personal Info',
                                 'documents' => 'Documents',
+                                'coursat' => 'Orange Coursat',
                                 'enrollment' => 'Cohort Selection',
                                 'questionnaire' => 'Questionnaire',
                                 'submitted' => 'Final Submission'
@@ -58,7 +59,8 @@
                     <div class="card-body">
                         <p><strong>Email:</strong> {{ $user->email }}</p>
                         <p><strong>Name:</strong> {{ $user->profile->first_name_en ?? '' }}
-                            {{ $user->profile->last_name_en ?? '' }}</p>
+                            {{ $user->profile->last_name_en ?? '' }}
+                        </p>
                         <p><strong>Phone:</strong> {{ $user->profile->phone ?? '-' }}</p>
                         <p><strong>Gender:</strong> {{ ucfirst($user->profile->gender ?? '-') }}</p>
                         <p><strong>Registered:</strong> {{ $user->created_at->format('Y-m-d H:i') }}</p>
@@ -131,6 +133,46 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Orange Coursat Certificates</h5>
+                    </div>
+                    <div class="card-body bg-light">
+                        @if($user->coursatCertificates->count() > 0)
+                            <div class="row g-3">
+                                @php $courses = ['html' => 'HTML', 'css' => 'CSS', 'javascript' => 'JavaScript']; @endphp
+                                @foreach($user->coursatCertificates as $cert)
+                                    @php
+                                        $ext = pathinfo($cert->file_path, PATHINFO_EXTENSION);
+                                        $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                    @endphp
+                                    <div class="col-sm-6">
+                                        <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                                            @if($isImage)
+                                                <a href="{{ asset('storage/' . $cert->file_path) }}" target="_blank" class="d-block bg-dark">
+                                                    <img src="{{ asset('storage/' . $cert->file_path) }}" class="card-img-top opacity-75 object-fit-cover" style="height: 100px;" alt="Certificate">
+                                                </a>
+                                            @else
+                                                <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 100px;">
+                                                    <a href="{{ asset('storage/' . $cert->file_path) }}" target="_blank" class="text-white text-decoration-none text-center opacity-75">
+                                                        <i class="bi bi-file-earmark-{{ strtolower($ext) === 'pdf' ? 'pdf' : 'text' }} h3 mb-0"></i>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            <div class="card-body p-2 text-center">
+                                                <div class="fw-bold small">{{ $courses[$cert->course_name] ?? ucfirst($cert->course_name) }}</div>
+                                                <div class="text-muted" style="font-size: 0.7rem;">{{ $cert->created_at->format('Y-m-d') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted text-center py-3 mb-0">No certificates uploaded</p>
+                        @endif
                     </div>
                 </div>
 

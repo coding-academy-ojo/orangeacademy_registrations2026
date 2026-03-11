@@ -35,4 +35,24 @@ class Admin extends Authenticatable
     {
         return $this->role === 'super_admin';
     }
+
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
+    public function isJobCoach(): bool
+    {
+        return $this->role === 'job_coach';
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === 'coordinator';
+    }
+
+    public function hasFullAccess(): bool
+    {
+        return in_array($this->role, ['super_admin', 'manager']);
+    }
 }

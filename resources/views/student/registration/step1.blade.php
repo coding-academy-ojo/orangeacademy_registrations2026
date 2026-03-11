@@ -14,56 +14,62 @@
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">First Name (English) <span
                                 class="text-danger">*</span></label>
-                        <input type="text" name="first_name_en" value="{{ old('first_name_en', $profile->first_name_en) }}"
-                            class="form-control" required>
+                        <input type="text" name="first_name_en" id="first_name_en" value="{{ old('first_name_en', $profile->first_name_en) }}"
+                            class="form-control first_name_en" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Second Name (English)</label>
-                        <input type="text" name="second_name_en"
-                            value="{{ old('second_name_en', $profile->second_name_en) }}" class="form-control">
+                        <input type="text" name="second_name_en" id="second_name_en"
+                            value="{{ old('second_name_en', $profile->second_name_en) }}" class="form-control second_name_en">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Third Name (English)</label>
-                        <input type="text" name="third_name_en" value="{{ old('third_name_en', $profile->third_name_en) }}"
-                            class="form-control">
+                        <input type="text" name="third_name_en" id="third_name_en" value="{{ old('third_name_en', $profile->third_name_en) }}"
+                            class="form-control third_name_en">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Family Name (English) <span
                                 class="text-danger">*</span></label>
-                        <input type="text" name="last_name_en" value="{{ old('last_name_en', $profile->last_name_en) }}"
-                            class="form-control" required>
+                        <input type="text" name="last_name_en" id="last_name_en" value="{{ old('last_name_en', $profile->last_name_en) }}"
+                            class="form-control last_name_en" required>
                     </div>
 
                     {{-- Arabic Name 4 Parts --}}
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">الاسم الأول (Arabic)</label>
-                        <input type="text" name="first_name_ar" value="{{ old('first_name_ar', $profile->first_name_ar) }}"
-                            class="form-control" dir="rtl">
+                        <input type="text" name="first_name_ar" id="first_name_ar" value="{{ old('first_name_ar', $profile->first_name_ar) }}"
+                            class="form-control first_name_ar" dir="rtl">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">اسم الأب (Arabic)</label>
-                        <input type="text" name="second_name_ar"
-                            value="{{ old('second_name_ar', $profile->second_name_ar) }}" class="form-control" dir="rtl">
+                        <input type="text" name="second_name_ar" id="second_name_ar"
+                            value="{{ old('second_name_ar', $profile->second_name_ar) }}" class="form-control second_name_ar" dir="rtl">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">اسم الجد (Arabic)</label>
-                        <input type="text" name="third_name_ar" value="{{ old('third_name_ar', $profile->third_name_ar) }}"
-                            class="form-control" dir="rtl">
+                        <input type="text" name="third_name_ar" id="third_name_ar" value="{{ old('third_name_ar', $profile->third_name_ar) }}"
+                            class="form-control third_name_ar" dir="rtl">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">اسم العائلة (Arabic)</label>
-                        <input type="text" name="last_name_ar" value="{{ old('last_name_ar', $profile->last_name_ar) }}"
-                            class="form-control" dir="rtl">
+                        <input type="text" name="last_name_ar" id="last_name_ar" value="{{ old('last_name_ar', $profile->last_name_ar) }}"
+                            class="form-control last_name_ar" dir="rtl">
+                    </div>
+                     <div class="col-md-6">
+                        <label class="form-label fw-semibold">ID Number (National ID) <span class="text-danger">*</span></label>
+                        <input type="text" name="id_number" id="id_number" value="{{ old('id_number', $profile->id_number) }}" class="form-control id_number"
+                            placeholder="10 digits" pattern="\d{10}" maxlength="10"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
-                        <input type="number" name="phone" value="{{ old('phone', $profile->phone) }}" class="form-control"
-                            placeholder="7xxxxxxxxx" min="100000000" max="99999999999999999999" required
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="number" name="phone" id="phone" value="{{ old('phone', $profile->phone) }}" class="form-control phone"
+                            placeholder="7xxxxxxxxx" min="100000000" max="99999999999999999999"
                             oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 20)">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
-                        <select name="gender" class="form-select" required>
+                        <select name="gender" id="gender" class="form-select gender" required>
                             <option value="">Select...</option>
                             @foreach(['male', 'female'] as $g)
                                 <option value="{{ $g }}" {{ old('gender', $profile->gender) == $g ? 'selected' : '' }}>
@@ -74,13 +80,13 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Date of Birth <span class="text-danger">*</span></label>
-                        <input type="date" name="date_of_birth"
+                        <input type="date" name="date_of_birth" id="date_of_birth"
                             value="{{ old('date_of_birth', $profile->date_of_birth?->format('Y-m-d')) }}"
-                            class="form-control" required>
+                            class="form-control date_of_birth" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Nationality <span class="text-danger">*</span></label>
-                        <select name="nationality" class="form-select border-0 bg-light py-2" required>
+                        <select name="nationality" id="nationality" class="form-select border-0 bg-light py-2 nationality" required>
                             <option value="">Select Nationality...</option>
                             @php
                                 $nationalities = ['Jordanian', 'Palestinian', 'Syrian', 'Egyptian', 'Iraqi', 'Lebanese', 'Saudi', 'Emirati', 'Other'];
@@ -93,7 +99,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Country <span class="text-danger">*</span></label>
-                        <select name="country" class="form-select border-0 bg-light py-2" required>
+                        <select name="country" id="country" class="form-select border-0 bg-light py-2 country" required>
                             <option value="">Select Country...</option>
                             @php
                                 $countries = ['Jordan', 'Palestine', 'Syria', 'Egypt', 'Iraq', 'Lebanon', 'Saudi Arabia', 'UAE', 'Other'];
@@ -127,12 +133,12 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Address</label>
-                        <textarea name="address" class="form-control"
+                        <textarea name="address" id="address" class="form-control address"
                             rows="2">{{ old('address', $profile->address) }}</textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Education Level</label>
-                        <select name="education_level" class="form-select">
+                        <select name="education_level" id="education_level" class="form-select education_level">
                             <option value="">Select...</option>
                             @foreach(['High School', 'Diploma', 'Bachelor', 'Master', 'PhD', 'Other'] as $e)
                                 <option value="{{ $e }}" {{ old('education_level', $profile->education_level) == $e ? 'selected' : '' }}>{{ $e }}</option>
@@ -152,14 +158,14 @@
                         </select>
                     </div>
                     
-                    <div class="col-md-6" id="major_wrapper" style="display: none;">
+                    <!-- <div class="col-md-6" id="major_wrapper" style="display: none;">
                         <label class="form-label fw-semibold">Major / Specialization</label>
                         <select name="major" id="major_select" class="form-select border-0 bg-light py-2">
                             <option value="">Select Major...</option>
                             {{-- Populated by JS --}}
                         </select>
                         <input type="hidden" id="old_major" value="{{ old('major', $profile->major) }}">
-                    </div>
+                    </div> -->
 
                     {{-- University Information --}}
                     <div class="col-md-12 mt-4">
@@ -167,7 +173,7 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-semibold">University (Jordanian Universities)</label>
-                        <select name="university" class="form-select border-0 bg-light py-2">
+                        <select name="university" id="university" class="form-select border-0 bg-light py-2 university">
                             <option value="">Select University...</option>
                             <optgroup label="🏛️ Public Universities">
                                 <option value="University of Jordan (UJ)" {{ old('university', $profile->university) == 'University of Jordan (UJ)' ? 'selected' : '' }}>University of Jordan (UJ)</option>
@@ -237,7 +243,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">GPA</label>
-                        <input type="text" name="gpa_value" value="{{ old('gpa_value', $profile->gpa_value) }}" class="form-control" placeholder="e.g. 3.5, 85%, Excellent, A+">
+                        <input type="text" name="gpa_value" id="gpa_value" value="{{ old('gpa_value', $profile->gpa_value) }}" class="form-control gpa_value" placeholder="e.g. 3.5, 85%, Excellent, A+">
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-4 pt-3 border-top">

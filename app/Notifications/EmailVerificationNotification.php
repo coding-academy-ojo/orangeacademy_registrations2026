@@ -26,14 +26,11 @@ class EmailVerificationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Verify Your Email Address')
-            ->greeting('Hello!')
-            ->line('Thank you for registering with Orange Academy.')
-            ->line('Your email verification code is:')
-            ->line('**' . $this->code . '**')
-            ->line('Please enter this code to verify your email and continue with your registration.')
-            ->line('This code will expire in 30 minutes.')
-            ->line('Thank you!');
+            ->subject('Orange Coding Academy - Email Verification')
+            ->view('emails.verify-email', [
+                'code' => $this->code,
+                'user' => $notifiable
+            ]);
     }
 
     public function toArray(object $notifiable): array

@@ -55,6 +55,11 @@ class User extends Authenticatable
         return $this->hasMany(Answer::class);
     }
 
+    public function coursatCertificates()
+    {
+        return $this->hasMany(CoursatCertificate::class);
+    }
+
     public function isStudent(): bool
     {
         return $this->role === 'student';

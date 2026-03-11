@@ -33,7 +33,14 @@
                     </div>
                     <hr>
                     <div class="text-start small">
-                        <p><strong>Phone:</strong> {{ $user->profile->phone ?? 'N/A' }}</p>
+                        <p><strong>ID Number:</strong> {{ $user->profile->id_number ?? 'N/A' }}</p>
+                        <p><strong>Phone:</strong> {{ $user->profile->phone ?? 'N/A' }} 
+                            @if($user->profile && $user->profile->phone_verified)
+                                <span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.65rem;">
+                                    <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                </span>
+                            @endif
+                        </p>
                         <p><strong>Gender:</strong> {{ ucfirst($user->profile->gender ?? 'N/A') }}</p>
                         <p><strong>DOB:</strong> {{ $user->profile->date_of_birth?->format('M d, Y') ?? 'N/A' }}</p>
                         <p><strong>Nationality:</strong> {{ $user->profile->nationality ?? 'N/A' }}</p>
@@ -134,41 +141,29 @@
                                                     <div class="small text-danger mt-2 text-start p-2 bg-danger-subtle border border-danger-subtle rounded"><i class="bi bi-info-circle me-1"></i>{{ $doc->rejection_reason }}</div>
                                                 @else
                                                     <div class="d-flex justify-content-between align-items-center gap-2">
-                                                        <form method="POST" action="{{ route('admin.documents.verify', $doc) }}" class="w-50 m-0 p-0">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-success w-100 fw-bold"><i class="bi bi-check2-circle me-1"></i>Verify</button>
-                                                        </form>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger w-50 fw-bold" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $doc->id }}">
-                                                            <i class="bi bi-x-circle me-1"></i>Reject
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    <!-- Reject Modal -->
-                                                    <div class="modal fade text-start" id="rejectModal{{ $doc->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $doc->id }}" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content border-danger">
-                                                                <form method="POST" action="/admin/documents/{{ $doc->id }}/unverify" class="reject-form" data-doc-id="{{ $doc->id }}">
-                                                                    @csrf
-                                                                    <div class="modal-header bg-danger-subtle">
-                                                                        <h5 class="modal-title fw-bold text-danger" id="rejectModalLabel{{ $doc->id }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reject Document</h5>
-                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <p class="mb-3">You are rejecting the document <strong>"{{ $doc->requirement->name ?? 'Document' }}"</strong> for <strong>{{ $user->profile->first_name_en ?? $user->email }}</strong>.</p>
-                                                                        <div class="mb-3">
-                                                                            <label for="rejection_reason_{{ $doc->id }}" class="form-label fw-bold">Reason for Rejection <span class="text-danger">*</span></label>
-                                                                            <textarea class="form-control" id="rejection_reason_{{ $doc->id }}" name="rejection_reason" rows="3" required placeholder="Please provide specific details so the student knows what to fix."></textarea>
-                                                                            <div class="form-text">An email notification will be sent to the student automatically.</div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="modal-footer bg-light">
-                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                                        <button type="submit" class="btn btn-danger"><i class="bi bi-send-fill me-2"></i>Reject & Notify</button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                         <form method="POST" action="{{ route('admin.documents.verify', $doc) }}" class="w-50 m-0 p-0">
+                                                             @csrf
+                                                             <button type="submit" class="btn btn-sm btn-success w-100 fw-bold"><i class="bi bi-check2-circle me-1"></i>Verify</button>
+                                                         </form>
+                                                         <button type="button" class="btn btn-sm btn-outline-danger w-50 fw-bold btn-reject-toggle" data-doc-id="{{ $doc->id }}">
+                                                             <i class="bi bi-x-circle me-1"></i>Reject
+                                                         </button>
+                                                     </div>
+                                                     
+                                                     {{-- Inline Reject Form --}}
+                                                     <div class="reject-form-container mt-3 d-none" id="rejectForm{{ $doc->id }}">
+                                                         <form method="POST" action="/admin/documents/{{ $doc->id }}/unverify" class="reject-form bg-white p-3 border border-danger-subtle rounded shadow-sm" data-doc-id="{{ $doc->id }}">
+                                                             @csrf
+                                                             <div class="mb-3">
+                                                                 <label for="rejection_reason_{{ $doc->id }}" class="form-label fw-bold small text-danger">Reason for Rejection <span class="text-danger">*</span></label>
+                                                                 <textarea class="form-control form-control-sm" id="rejection_reason_{{ $doc->id }}" name="rejection_reason" rows="3" required placeholder="Provide details for the student..."></textarea>
+                                                             </div>
+                                                             <div class="d-flex justify-content-between gap-2">
+                                                                 <button type="button" class="btn btn-xs btn-light w-50 btn-cancel-reject" data-doc-id="{{ $doc->id }}">Cancel</button>
+                                                                 <button type="submit" class="btn btn-xs btn-danger w-50"><i class="bi bi-send-fill me-1"></i>Reject</button>
+                                                             </div>
+                                                         </form>
+                                                     </div>
                                                 @endif
                                             </div>
                                         </div>
@@ -180,6 +175,53 @@
                         <div class="text-center text-muted py-5">
                             <i class="bi bi-folder-x display-5 mb-3 text-secondary opacity-50 d-block"></i>
                             <p class="mb-0 fs-5">No documents uploaded yet.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Orange Coursat Certificates --}}
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-award text-orange me-2"></i>Orange Coursat Certificates</h6>
+                </div>
+                <div class="card-body bg-light p-4">
+                    @if($user->coursatCertificates->count() > 0)
+                        <div class="row g-4">
+                            @php $courses = ['html' => 'HTML', 'css' => 'CSS', 'javascript' => 'JavaScript']; @endphp
+                            @foreach($user->coursatCertificates as $cert)
+                                @php
+                                    $ext = pathinfo($cert->file_path, PATHINFO_EXTENSION);
+                                    $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                @endphp
+                                <div class="col-sm-6 col-md-4">
+                                    <div class="card h-100 border-0 shadow-sm overflow-hidden rounded-3">
+                                        @if($isImage)
+                                            <a href="{{ asset('storage/' . $cert->file_path) }}" target="_blank" class="d-block bg-dark" title="Click to open full image">
+                                                <img src="{{ asset('storage/' . $cert->file_path) }}" class="card-img-top opacity-75 object-fit-cover" style="height: 150px; transition: opacity 0.3s;" onmouseover="this.classList.remove('opacity-75')" onmouseout="this.classList.add('opacity-75')" alt="Certificate">
+                                            </a>
+                                        @else
+                                            <div class="card-img-top bg-dark d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                <a href="{{ asset('storage/' . $cert->file_path) }}" target="_blank" class="text-white text-decoration-none text-center opacity-75" style="transition: opacity 0.3s;" onmouseover="this.classList.remove('opacity-75')" onmouseout="this.classList.add('opacity-75')" title="Click to open certificate">
+                                                    <i class="bi bi-file-earmark-{{ strtolower($ext) === 'pdf' ? 'pdf' : 'text' }} display-4 text-orange"></i>
+                                                    <div class="mt-2 small text-uppercase fw-bold tracking-wide">{{ $ext }} FILE</div>
+                                                </a>
+                                            </div>
+                                        @endif
+                                        <div class="card-body p-3 text-center d-flex flex-column">
+                                            <h6 class="card-title fw-bold text-truncate mb-1">
+                                                {{ $courses[$cert->course_name] ?? ucfirst($cert->course_name) }}
+                                            </h6>
+                                            <p class="text-muted small mb-0">{{ $cert->created_at->format('M d, Y') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-award display-5 mb-3 text-secondary opacity-50 d-block"></i>
+                            <p class="mb-0 fs-5">No certificates uploaded yet.</p>
                         </div>
                     @endif
                 </div>
@@ -234,32 +276,74 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Reject Form
+            document.querySelectorAll('.btn-reject-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const docId = this.dataset.docId;
+                    const formContainer = document.getElementById('rejectForm' + docId);
+                    formContainer.classList.remove('d-none');
+                    // Focus the textarea
+                    formContainer.querySelector('textarea').focus();
+                    // Hide the action buttons
+                    this.closest('.d-flex').classList.add('d-none');
+                });
+            });
+
+            // Cancel Rejection
+            document.querySelectorAll('.btn-cancel-reject').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const docId = this.dataset.docId;
+                    const formContainer = document.getElementById('rejectForm' + docId);
+                    formContainer.classList.add('d-none');
+                    // Show the action buttons back
+                    formContainer.closest('.card-body').querySelector('.d-flex').classList.remove('d-none');
+                });
+            });
+
             document.querySelectorAll('.reject-form').forEach(function(form) {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    const docId = this.dataset.docId;
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
-                    const modal = this.closest('.modal');
                     
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Rejecting...';
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>...';
                     
                     fetch(this.action, {
                         method: 'POST',
                         body: new FormData(this),
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
                         }
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success || response.ok) {
-                            // Hide modal
-                            bootstrap.Modal.getInstance(modal).hide();
-                            // Reload page to show changes
-                            location.reload();
+                        if (data.success) {
+                            // Show premium success toast
+                            const toastHTML = `
+                                <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+                                    <div id="successToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                                        <div class="d-flex">
+                                            <div class="toast-body p-3">
+                                                <i class="bi bi-check-circle-fill me-2"></i>
+                                                <strong>Success!</strong> ${data.message}
+                                            </div>
+                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.insertAdjacentHTML('beforeend', toastHTML);
+                            const toastElement = document.getElementById('successToast');
+                            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+                            toast.show();
+                            
+                            // Reload after a short delay to let user see the toast
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
                         } else {
                             alert('Error: ' + (data.message || 'Something went wrong'));
                             submitBtn.disabled = false;

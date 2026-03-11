@@ -28,6 +28,8 @@
                                         <td>
                                             @if($doc->is_verified)
                                                 <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+                                            @elseif($doc->rejection_reason)
+                                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Rejected</span>
                                             @else
                                                 <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
                                             @endif
@@ -60,16 +62,29 @@
                                             @endif
                                         </span>
                                         @if($uploadedDoc)
-                                            <span class="badge bg-success rounded-pill px-2"><i class="bi bi-check2"></i>
-                                                Uploaded</span>
+                                            @if($uploadedDoc->is_verified)
+                                                <span class="badge bg-success rounded-pill px-2"><i class="bi bi-check2"></i>
+                                                    Verified</span>
+                                            @elseif($uploadedDoc->rejection_reason)
+                                                <span class="badge bg-danger rounded-pill px-2"><i class="bi bi-x"></i> Rejected</span>
+                                            @else
+                                                <span class="badge bg-success rounded-pill px-2"><i class="bi bi-check2"></i>
+                                                    Uploaded</span>
+                                            @endif
                                         @endif
                                     </h6>
+                                    @if($uploadedDoc && $uploadedDoc->rejection_reason)
+                                        <div class="alert alert-danger py-2 px-3 small mb-2">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            <strong>Rejected:</strong> {{ $uploadedDoc->rejection_reason }}
+                                        </div>
+                                    @endif
                                     @if($req->description)
                                         <p class="card-text text-muted small mb-3">{{ $req->description }}</p>
                                     @endif
 
                                     <div class="mt-auto">
-                                        <input type="file" name="documents[{{ $req->id }}]" class="form-control form-control-sm"
+                                        <input type="file" name="documents[{{ $req->id }}]" id="documents_{{ $req->id }}" class="form-control form-control-sm documents_{{ $req->id }}"
                                             {{ $req->is_required && !$uploadedDoc ? 'required' : '' }}>
                                     </div>
                                 </div>

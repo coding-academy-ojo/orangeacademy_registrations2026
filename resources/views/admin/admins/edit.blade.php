@@ -30,9 +30,14 @@
                 <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
                     <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
-                        <option value="admin" {{ old('role', $admin->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="super_admin" {{ old('role', $admin->role) == 'super_admin' ? 'selected' : '' }}>Super
                             Admin</option>
+                        <option value="manager" {{ old('role', $admin->role) == 'manager' ? 'selected' : '' }}>Manager
+                        </option>
+                        <option value="job_coach" {{ old('role', $admin->role) == 'job_coach' ? 'selected' : '' }}>Job Coach
+                        </option>
+                        <option value="coordinator" {{ old('role', $admin->role) == 'coordinator' ? 'selected' : '' }}>
+                            Coordinator</option>
                     </select>
                     @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>

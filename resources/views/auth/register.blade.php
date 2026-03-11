@@ -580,8 +580,8 @@
                     <div class="input-group-custom">
                         <label class="input-label" data-en="Email Address" data-ar="البريد الإلكتروني">Email Address</label>
                         <div class="input-wrap">
-                            <input type="email" name="email" value="{{ old('email') }}" autocomplete="email"
-                                class="auth-input @error('email') is-invalid @enderror" placeholder="you@example.com"
+                            <input type="email" name="email" id="email" value="{{ old('email') }}" autocomplete="email"
+                                class="auth-input email @error('email') is-invalid @enderror" placeholder="you@example.com"
                                 required>
                             <i class="bi bi-envelope input-icon"></i>
                         </div>
@@ -589,11 +589,22 @@
                     </div>
 
                     <div class="input-group-custom">
+                        <label class="input-label" data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</label>
+                        <div class="input-wrap">
+                            <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel"
+                                class="auth-input phone @error('phone') is-invalid @enderror" placeholder="07xxxxxxxxx"
+                                required maxlength="20" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <i class="bi bi-phone input-icon"></i>
+                        </div>
+                        @error('phone')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                    </div>
+
+                    <div class="input-group-custom">
                         <label class="input-label" data-en="Password" data-ar="كلمة المرور">Password</label>
                         <div class="input-wrap">
-                            <input type="password" name="password" id="passwordInput" autocomplete="new-password"
-                                class="auth-input @error('password') is-invalid @enderror" placeholder="Min. 8 characters"
-                                required>
+                            <input type="password" name="password" id="password" autocomplete="new-password"
+                                class="auth-input password @error('password') is-invalid @enderror"
+                                placeholder="Min. 8 characters" required>
                             <i class="bi bi-lock input-icon"></i>
                         </div>
                         <div class="strength-bar" id="strengthBar">
@@ -609,9 +620,29 @@
                         <label class="input-label" data-en="Confirm Password" data-ar="تأكيد كلمة المرور">Confirm
                             Password</label>
                         <div class="input-wrap">
-                            <input type="password" name="password_confirmation" autocomplete="new-password"
-                                class="auth-input" placeholder="••••••••" required>
+                            <input type="password" name="password_confirmation" id="password_confirmation"
+                                autocomplete="new-password" class="auth-input password_confirmation" placeholder="••••••••"
+                                required>
                             <i class="bi bi-shield-check input-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group-custom d-flex align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input @error('terms') is-invalid @enderror" type="radio" name="terms"
+                                id="termsAgree" value="1" required
+                                style="accent-color: #ff6b35; width: 1.2rem; height: 1.2rem; margin-top: 0.2rem;">
+                            <label class="form-check-label ms-2 text-white-50" for="termsAgree"
+                                style="font-size: 0.85rem; cursor: pointer;">
+                                <span data-en="I agree to the" data-ar="أوافق على ">I agree to the</span>
+                                <a href="{{ route('terms') }}" target="_blank" class="text-orange fw-bold"
+                                    style="color: #ff9d42; text-decoration: none;" data-en="terms & conditions"
+                                    data-ar="الشروط والأحكام">terms & conditions</a>
+                                <span data-en=" Orange. *" data-ar=" أورنج. *"> Orange. *</span>
+                            </label>
+                            @error('terms')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -735,7 +766,7 @@
         setLang(saved);
 
         // Password strength indicator
-        const pw = document.getElementById('passwordInput');
+        const pw = document.getElementById('password');
         if (pw) {
             pw.addEventListener('input', function () {
                 const val = this.value;

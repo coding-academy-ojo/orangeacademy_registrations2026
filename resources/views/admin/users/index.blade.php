@@ -105,7 +105,14 @@
                                     {{ $u->profile->last_name_en ?? '' }}
                                 </td>
                                 <td class="small">{{ $u->email }}</td>
-                                <td class="small">{{ $u->profile->phone ?? '-' }}</td>
+                                <td class="small">
+                                    <div class="d-flex align-items-center gap-1">
+                                        {{ $u->profile->phone ?? '-' }}
+                                        @if($u->profile && $u->profile->phone_verified)
+                                            <i class="bi bi-check-circle-fill text-success" title="Verified" style="font-size: 0.75rem;"></i>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="d-flex flex-column gap-1">
                                     @if($u->is_active)<span class="badge bg-success" style="width: fit-content;">Active Account</span>@else<span

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Document extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'document_requirement_id', 'file_path', 'is_verified'];
+    protected $fillable = ['user_id', 'document_requirement_id', 'file_path', 'is_verified', 'rejection_reason'];
     protected $casts = ['is_verified' => 'boolean'];
 
     public function user()

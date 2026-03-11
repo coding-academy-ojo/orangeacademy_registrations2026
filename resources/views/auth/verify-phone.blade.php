@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email - Orange Academy</title>
+    <title>Verify Phone - Orange Academy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -251,7 +251,7 @@
             color: #ea868f;
         }
 
-        .email-icon {
+        .phone-icon {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -310,13 +310,13 @@
             <div class="col-md-5">
                 <div class="verify-card">
                     <div class="verify-icon">
-                        <i class="bi bi-envelope-fill"></i>
+                        <i class="bi bi-phone-fill"></i>
                     </div>
 
-                    <h3 class="verify-title">Verify Your Email</h3>
+                    <h3 class="verify-title">Verify Your Phone</h3>
                     <p class="verify-desc">
-                        We've sent a verification code to<br>
-                        <strong>{{ auth()->user()->email }}</strong>
+                        We've sent a verification code to your phone number<br>
+                        <strong>{{ auth()->user()->profile->phone }}</strong>
                     </p>
 
                     @if(session('success'))
@@ -333,11 +333,11 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('student.verify-email') }}">
+                    <form method="POST" action="{{ route('student.verify-phone') }}">
                         @csrf
                         <div class="mb-3 form-group-anim">
                             <label class="form-label d-flex align-items-center justify-content-center gap-2">
-                                <span class="email-icon"><i class="bi bi-shield-check"></i></span>
+                                <span class="phone-icon"><i class="bi bi-shield-check"></i></span>
                                 Enter Verification Code
                             </label>
                             <input type="text" name="code" class="form-control" 
@@ -348,7 +348,7 @@
                         </div>
                         <button type="submit" class="btn btn-verify">
                             <i class="bi bi-check-lg me-2"></i>
-                            Verify Email
+                            Verify Phone
                         </button>
                     </form>
 
@@ -356,7 +356,7 @@
                         <span>Didn't receive code?</span>
                     </div>
 
-                    <form method="POST" action="{{ route('student.verify-email.resend') }}">
+                    <form method="POST" action="{{ route('student.verify-phone.resend') }}">
                         @csrf
                         <button type="submit" class="resend-btn">
                             <i class="bi bi-arrow-clockwise me-2"></i>

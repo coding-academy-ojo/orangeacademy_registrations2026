@@ -41,13 +41,13 @@ class DocumentRejectedNotification extends Notification
     {
         $docName = $this->document->requirement->name ?? 'Document';
         return (new MailMessage)
-            ->subject('Your Document was Rejected - Action Required')
-            ->greeting('Hello!')
-            ->line('Unfortunately, the document you uploaded for "' . $docName . '" was rejected by our administration.')
-            ->line('Reason for rejection: ' . $this->reason)
-            ->line('Please upload a clearer or more accurate version of this document to proceed with your registration.')
-            ->action('Update Document', url('/student/registration/step/2'))
-            ->line('Thank you!');
+            ->subject('Action Required: Your Document was Rejected - Orange Coding Academy')
+            ->view('emails.document-rejected', [
+                'user' => $notifiable,
+                'document_name' => $docName,
+                'reason' => $this->reason,
+                'update_url' => url('/student/registration/step/2')
+            ]);
     }
 
     /**

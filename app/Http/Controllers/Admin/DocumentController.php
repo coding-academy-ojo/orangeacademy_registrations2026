@@ -22,6 +22,7 @@ class DocumentController extends Controller
         $document->update(['is_verified' => true]);
 
         if (request()->ajax() || request()->wantsJson()) {
+            session()->flash('success', 'Document verified.');
             return response()->json(['success' => true, 'message' => 'Document verified.']);
         }
 
@@ -38,9 +39,21 @@ class DocumentController extends Controller
             'rejection_reason' => $reason
         ]);
 
-        $document->user->notify(new \App\Notifications\DocumentRejectedNotification($document, $reason));
+        try {
+            $document->user->notify(new \App\Notifications\DocumentRejectedNotification($document, $reason));
+        } catch (\Exception $e) {
+            \Log::error('Document rejection notification failed: ' . $e->getMessage());
+            // If it's an AJAX request, we still want to tell the admin the document was updated but mail failed
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Document updated, but email notification failed. ' . $e->getMessage()
+                ]);
+            }
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
+            session()->flash('success', 'Document rejected and user notified.');
             return response()->json(['success' => true, 'message' => 'Document rejected and user notified.']);
         }
 

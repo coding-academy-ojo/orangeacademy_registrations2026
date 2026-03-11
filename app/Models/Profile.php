@@ -17,7 +17,9 @@ class Profile extends Model
         'third_name_ar',
         'last_name_ar',
         'phone',
+        'id_number',
         'phone_verified',
+        'phone_verified_at',
         'gender',
         'date_of_birth',
         'nationality',
@@ -38,6 +40,7 @@ class Profile extends Model
     protected $casts = [
         'date_of_birth' => 'date',
         'phone_verified' => 'boolean',
+        'phone_verified_at' => 'datetime',
         'is_graduated' => 'boolean',
     ];
     public function user()

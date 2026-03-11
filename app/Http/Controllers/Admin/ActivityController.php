@@ -24,10 +24,10 @@ class ActivityController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('description', 'like', "%{$request->search}%")
-                  ->orWhereHas('user', function ($uq) use ($request) {
-                      $uq->where('email', 'like', "%{$request->search}%");
-                  });
+                    ->orWhere('description', 'like', "%{$request->search}%")
+                    ->orWhereHas('user', function ($uq) use ($request) {
+                        $uq->where('email', 'like', "%{$request->search}%");
+                    });
             });
         }
 
@@ -39,7 +39,7 @@ class ActivityController extends Controller
 
     public function userProgress(Request $request)
     {
-        $users = User::with(['profile', 'enrollments.cohort.academy', 'documents'])
+        $users = User::with(['profile', 'enrollments.cohort.academy', 'documents', 'coursatCertificates'])
             ->where('role', 'student')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -55,11 +55,11 @@ class ActivityController extends Controller
 
     public function userDetail(User $user)
     {
-        $user->load(['profile', 'enrollments.cohort.academy', 'documents.documentRequirement', 'answers.question', 'assessmentSubmissions.assessment']);
-        
+        $user->load(['profile', 'enrollments.cohort.academy', 'documents.documentRequirement', 'coursatCertificates', 'answers.question', 'assessmentSubmissions.assessment']);
+
         $completedSteps = $this->getCompletedSteps($user);
         $registrationProgress = $this->getRegistrationProgress($user);
-        
+
         $activities = Activity::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->limit(50)
@@ -71,15 +71,17 @@ class ActivityController extends Controller
     private function getCompletedSteps($user): array
     {
         $steps = [];
-        
+
         if ($user->email_verified_at) {
             $steps[] = 'email_verified';
         }
-        
+
         if ($user->profile) {
             $profile = $user->profile;
-            if ($profile->first_name_en && $profile->last_name_en && $profile->phone && 
-                $profile->gender && $profile->date_of_birth && $profile->nationality) {
+            if (
+                $profile->first_name_en && $profile->last_name_en && $profile->phone &&
+                $profile->gender && $profile->date_of_birth && $profile->nationality
+            ) {
                 $steps[] = 'profile';
             }
         }
@@ -87,15 +89,21 @@ class ActivityController extends Controller
         $requiredDocs = $user->documents()->whereHas('documentRequirement', function ($q) {
             $q->where('is_required', true);
         })->count();
-        
+
         $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
-        
+
         if ($requiredDocs >= $requiredCount && $requiredCount > 0) {
             $steps[] = 'documents';
         }
 
         if ($user->enrollments()->exists()) {
             $steps[] = 'enrollment';
+        }
+
+        $courses = ['html', 'css', 'javascript'];
+        $uploadedCerts = $user->coursatCertificates()->whereIn('course_name', $courses)->count();
+        if ($uploadedCerts >= 3) {
+            $steps[] = 'coursat';
         }
 
         $hasAnswers = $user->answers()->exists();
@@ -115,7 +123,7 @@ class ActivityController extends Controller
     {
         $completedSteps = $this->getCompletedSteps($user);
         $totalSteps = 7;
-        
+
         return round((count($completedSteps) / $totalSteps) * 100);
     }
 

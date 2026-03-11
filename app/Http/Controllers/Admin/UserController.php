@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with(['profile', 'enrollments.cohort.academy']);
+        $query = User::with(['profile', 'enrollments.cohort.academy', 'coursatCertificates']);
 
         if ($request->search) {
             $search = $request->search;
@@ -70,7 +70,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->load(['profile', 'documents', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'answers.question']);
+        $user->load(['profile', 'documents', 'coursatCertificates', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'answers.question']);
         return view('admin.users.show', compact('user'));
     }
 

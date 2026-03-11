@@ -28,5 +28,11 @@ class AppServiceProvider extends ServiceProvider
             $apiKey = config('mail.mailers.mailtrap-api.api_key');
             return new MailtrapApiTransport($apiKey);
         });
+
+        // Admin Roles and Permissions
+        \Illuminate\Support\Facades\Gate::define('manage-admins', fn($admin) => $admin->isSuperAdmin());
+        \Illuminate\Support\Facades\Gate::define('full-access', fn($admin) => $admin->hasFullAccess());
+        \Illuminate\Support\Facades\Gate::define('manage-interviews-assessments', fn($admin) => $admin->hasFullAccess() || $admin->isJobCoach());
+        \Illuminate\Support\Facades\Gate::define('manage-operations', fn($admin) => $admin->hasFullAccess() || $admin->isCoordinator());
     }
 }

@@ -10,8 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('profiles', function (Blueprint $table) {
-            $table->string('major')->nullable()->after('field_of_study');
+        Schema::table('academies', function (Blueprint $table) {
+            $table->string('image')->nullable()->after('code');
+            $table->string('location_link')->nullable()->after('location');
         });
     }
 
@@ -20,8 +21,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('profiles', function (Blueprint $table) {
-            $table->dropColumn('major');
+        Schema::table('academies', function (Blueprint $table) {
+            $table->dropColumn(['image', 'location_link']);
         });
     }
 };

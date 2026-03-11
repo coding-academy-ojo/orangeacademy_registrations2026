@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         );
         \App\Models\Admin::firstOrCreate(
             ['email' => 'staff@orange.jo'],
-            ['name' => 'Admin Staff', 'password' => \Illuminate\Support\Facades\Hash::make('password'), 'role' => 'admin']
+            ['name' => 'Admin Staff', 'password' => \Illuminate\Support\Facades\Hash::make('password'), 'role' => 'manager']
         );
 
         // 1.5 Create Default Document Requirements
@@ -49,30 +49,39 @@ class DatabaseSeeder extends Seeder
         // 2. Create Academies & Cohorts (Orange Jordan specific)
         $academiesData = [
             [
-                'name' => 'Coding Academy',
-                'location' => 'Amman - 1st Circle',
+                'name' => 'Amman Coding Academy',
+                'location' => 'Amman',
                 'description' => 'Intensive 6-month coding bootcamp for aspiring software developers.',
                 'cohorts' => [
-                    ['name' => 'Cohort 15 - Full Stack Web', 'start_date' => Carbon::now()->addMonths(1), 'end_date' => Carbon::now()->addMonths(7), 'status' => 'active'],
-                    ['name' => 'Cohort 16 - Data Science', 'start_date' => Carbon::now()->addMonths(2), 'end_date' => Carbon::now()->addMonths(8), 'status' => 'active'],
+                    ['name' => 'Cohort 1- Full Stack Web', 'start_date' => Carbon::now()->addMonths(1), 'end_date' => Carbon::now()->addMonths(7), 'status' => 'active'],
                 ]
             ],
             [
-                'name' => 'Digital Village',
+                'name' => 'Irbid Coding Academy',
                 'location' => 'Irbid',
                 'description' => 'Empowering the northern region with digital skills.',
                 'cohorts' => [
-                    ['name' => 'Web Development Bootcamp Irbid', 'start_date' => Carbon::now()->addDays(15), 'end_date' => Carbon::now()->addMonths(6)->addDays(15), 'status' => 'active'],
+                    ['name' => 'Cohort 1- Full Stack Web', 'start_date' => Carbon::now()->addMonths(1), 'end_date' => Carbon::now()->addMonths(7), 'status' => 'active'],
                 ]
             ],
             [
-                'name' => 'Fabrication Lab (FabLab)',
-                'location' => 'Amman - BIG',
+                'name' => 'Zarqa Coding Academy',
+                'location' => 'Zarqa',
                 'description' => 'A digital fabrication laboratory for hardware innovation.',
                 'cohorts' => [
-                    ['name' => 'IoT & Hardware Prototyping', 'start_date' => Carbon::now()->subMonths(1), 'end_date' => Carbon::now()->addMonths(2), 'status' => 'active'],
+                    ['name' => 'Cohort 1- Full Stack Web', 'start_date' => Carbon::now()->addMonths(1), 'end_date' => Carbon::now()->addMonths(7), 'status' => 'active'],
                 ]
             ],
+
+            [
+                'name' => 'Balqa  Coding Academy',
+                'location' => 'Balqa',
+                'description' => 'A digital fabrication laboratory for hardware innovation.',
+                'cohorts' => [
+                    ['name' => 'Cohort 1- Full Stack Web', 'start_date' => Carbon::now()->addMonths(1), 'end_date' => Carbon::now()->addMonths(7), 'status' => 'active'],
+                ]
+            ],
+
         ];
 
         $cohortList = collect();

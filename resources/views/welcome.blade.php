@@ -351,8 +351,87 @@
             line-height: 1.8;
         }
 
+        @keyframes typing-reveal {
+            from {
+                clip-path: inset(0 100% 0 0);
+                opacity: 0;
+            }
+
+            1% {
+                opacity: 1;
+            }
+
+            to {
+                clip-path: inset(0 0 0 0);
+                opacity: 1;
+            }
+        }
+
         .code-line {
             display: flex;
+            opacity: 0;
+            clip-path: inset(0 100% 0 0);
+            animation: typing-reveal 0.6s steps(30, end) forwards;
+        }
+
+        .code-line:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .code-line:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        .code-line:nth-child(3) {
+            animation-delay: 1.4s;
+        }
+
+        .code-line:nth-child(4) {
+            animation-delay: 1.6s;
+        }
+
+        .code-line:nth-child(5) {
+            animation-delay: 2.2s;
+        }
+
+        .code-line:nth-child(6) {
+            animation-delay: 2.4s;
+        }
+
+        .code-line:nth-child(7) {
+            animation-delay: 3.0s;
+        }
+
+        .code-line:nth-child(8) {
+            animation-delay: 3.2s;
+        }
+
+        .code-line:nth-child(9) {
+            animation-delay: 3.8s;
+        }
+
+        .code-line:nth-child(10) {
+            animation-delay: 4.4s;
+        }
+
+        .code-line:nth-child(11) {
+            animation-delay: 5.0s;
+        }
+
+        .code-line:nth-child(12) {
+            animation-delay: 5.2s;
+        }
+
+        .code-line:nth-child(13) {
+            animation-delay: 5.4s;
+        }
+
+        .code-line:nth-child(14) {
+            animation-delay: 6.0s;
+        }
+
+        .code-line:nth-child(15) {
+            animation-delay: 6.2s;
         }
 
         .code-num {
@@ -1441,5 +1520,15 @@
         }
         const saved = localStorage.getItem('lang') || 'en';
         setLang(saved);
+
+        // Loop typing animation
+        setInterval(() => {
+            const lines = document.querySelectorAll('.code-line');
+            lines.forEach(line => {
+                line.style.animation = 'none';
+                void line.offsetWidth; // trigger reflow
+                line.style.animation = '';
+            });
+        }, 8500);
     </script>
 @endsection
