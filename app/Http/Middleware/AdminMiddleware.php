@@ -9,7 +9,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!auth('admin')->check()) {
-            abort(403, 'Access denied.');
+            return redirect('/admin/login')->withErrors(['email' => 'Please log in to access the admin panel.']);
         }
         return $next($request);
     }

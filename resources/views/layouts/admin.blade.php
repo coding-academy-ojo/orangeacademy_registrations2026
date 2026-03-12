@@ -371,7 +371,7 @@
                 <span class="text-muted small">{{ auth('admin')->user()->email }}</span>
                 <span class="badge rounded-pill"
                     style="background:var(--orange-primary);color:white;">{{ ucfirst(str_replace('_', ' ', auth('admin')->user()->role)) }}</span>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
                     @csrf
                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Logout">
                         <i class="bi bi-box-arrow-right"></i>

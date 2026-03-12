@@ -35,12 +35,6 @@ class AuthController extends Controller
             'password.required' => 'Password is required.',
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
-            Auth::shouldUse('admin');
-            $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
-        }
-
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended('/student/dashboard');

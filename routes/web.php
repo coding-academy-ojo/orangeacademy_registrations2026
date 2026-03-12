@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Student\RegistrationController;
 use App\Http\Controllers\Admin;
 use App\Http\Middleware\AdminMiddleware;
@@ -18,7 +19,7 @@ Route::get('/', function () {
 
 Route::view('/terms', 'terms')->name('terms');
 
-// Auth routes
+// ── Student Auth Routes ──
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -37,6 +38,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Admin Auth Routes ──
+Route::prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+});
 
 // Student routes
 Route::middleware('auth')->prefix('student')->group(function () {

@@ -18,19 +18,30 @@ class InterviewController extends Controller
 
         // Get students accepted for interviews for active academy
         $students = \App\Models\User::where('role', 'student')
-            ->whereHas('enrollments', function ($q) use ($activeTab, $statusFilter) {
+            ->whereHas('enrollments', function ($q) use ($activeTab) {
                 $q->whereHas('cohort', function ($q2) use ($activeTab) {
                     $q2->where('academy_id', $activeTab);
                 });
-
+            })
+            ->where(function($query) use ($statusFilter) {
                 if ($statusFilter === 'pending') {
-                    $q->where('status', 'accepted');
+                    $query->where('filtration_status', 'Accepted for Interview')
+                          ->whereDoesntHave('enrollments.interviewEvaluation');
                 } elseif ($statusFilter === 'enrolled') {
-                    $q->where('status', 'enrolled');
+                    $query->whereHas('enrollments', function($q) {
+                        $q->where('status', 'enrolled');
+                    });
                 } elseif ($statusFilter === 'rejected') {
-                    $q->where('status', 'rejected');
+                    $query->where('filtration_status', 'Rejected')
+                          ->orWhereHas('enrollments', function($q) {
+                              $q->where('status', 'rejected');
+                          });
                 } else {
-                    $q->whereIn('status', ['accepted', 'enrolled', 'rejected']);
+                    $query->where('filtration_status', 'Accepted for Interview')
+                          ->orWhere('filtration_status', 'Rejected')
+                          ->orWhereHas('enrollments', function($q) {
+                              $q->whereIn('status', ['enrolled', 'rejected']);
+                          });
                 }
             })
             ->with([

@@ -529,16 +529,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-xl-3">
-            <div class="card stat-card h-100">
-                <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-icon" style="background:rgba(75,180,230,0.1)">
-                        <i class="bi bi-person-badge-fill" style="color:#4bb4e6"></i>
-                    </div>
-                    <div class="fs-4 fw-bold">{{ $totalAge1835 }}</div>
-                </div>
-            </div>
-        </div>
+
     </div>
     </div>
 
@@ -548,77 +539,147 @@
             data-ar="تحليل الأكاديميات">Academy Analytics Breakdown</span></div>
     <div class="row g-3 mb-4">
         @foreach($academyDetailedStats as $name => $data)
+            @php
+                $pendingCount  = 0;
+                $acceptedCount = 0;
+                foreach ($data['cohorts'] as $c) {
+                    $pendingCount  += ($c['applied']   ?? 0);
+                    $acceptedCount += ($c['accepted']  ?? 0);
+                }
+                $totalStudents  = $data['total'];
+                $graduatedCount = $data['graduated_count'];
+                $acceptedRatio  = $totalStudents > 0 ? round(($acceptedCount / $totalStudents) * 100) : 0;
+                $totalAge1835Academy = array_sum($data['age']);
+            @endphp
             <div class="col-xl-3 col-md-6">
-                <div class="card stat-card border-0 shadow-sm h-100" style="border-radius: 12px; overflow: hidden;">
-                    <div class="card-header bg-white border-0 py-3 pb-0">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h6 class="fw-bold mb-0 text-orange" style="font-size: 0.9rem;">
-                                <i class="bi bi-building me-1"></i> {{ $name }}
-                            </h6>
-                            <span class="badge bg-soft-orange text-orange" style="font-size: 0.75rem;">
-                                {{ $data['total'] }} <span data-en="Students" data-ar="طالب">Students</span>
-                            </span>
+                <div class="card border-0 shadow-sm h-100" style="border-radius:14px;overflow:hidden;">
+                    {{-- Academy Name Header --}}
+                    <div class="card-header border-0 py-2 px-3" style="background:linear-gradient(135deg,#ff7900,#ffaa40);">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-building text-white" style="font-size:1rem;"></i>
+                            <span class="fw-bold" style="font-size:0.85rem;">{{ $name }}</span>
                         </div>
                     </div>
-                    <div class="card-body py-2">
-                        {{-- Gender Distribution --}}
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between small text-muted mb-1" style="font-size: 0.75rem;">
-                                <span data-en="Gender Distribution" data-ar="توزيع الجنس">Gender
-                                    Distribution</span>
-                                <span>
-                                    <i class="bi bi-gender-male text-primary"></i>
-                                    {{ $data['gender']['male'] ?? 0 }}
-                                    <i class="bi bi-gender-female text-danger ms-1"></i>
-                                    {{ $data['gender']['female'] ?? 0 }}
-                                </span>
+                    <div class="card-body p-3">
+                        {{-- 2×2 stat grid --}}
+                        <div class="row g-2 mb-3">
+                            {{-- Total Students --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(255,121,0,0.07);">
+                                    <div class="fw-bold" style="font-size:1.4rem;color:#ff7900;line-height:1.1;">{{ $totalStudents }}</div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Total" data-ar="الإجمالي">Total</div>
+                                </div>
                             </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px;">
-                                @php
-                                    $totalG = ($data['gender']['male'] ?? 0) + ($data['gender']['female'] ?? 0);
-                                    $maleP = $totalG > 0 ? (($data['gender']['male'] ?? 0) / $totalG) * 100 : 0;
-                                @endphp
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $maleP }}%"></div>
-                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ 100 - $maleP }}%"></div>
+                            {{-- Pending --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(255,193,7,0.1);">
+                                    <div class="fw-bold" style="font-size:1.4rem;color:#e6a800;line-height:1.1;">{{ $pendingCount }}</div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Pending" data-ar="معلّق">Pending</div>
+                                </div>
+                            </div>
+                            {{-- Accepted --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(40,167,69,0.08);">
+                                    <div class="fw-bold" style="font-size:1.4rem;color:#28a745;line-height:1.1;">{{ $acceptedCount }}</div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Accepted" data-ar="مقبول">Accepted</div>
+                                </div>
+                            </div>
+                            {{-- Uni. Graduates --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(171,140,228,0.1);">
+                                    <div class="fw-bold" style="font-size:1.4rem;color:#ab8ce4;line-height:1.1;">{{ $graduatedCount }}</div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Uni. Grads" data-ar="خريجو الجامعة">Uni. Grads</div>
+                                </div>
                             </div>
                         </div>
+                        {{-- Acceptance rate bar --}}
+                        @php
+                            $maleCount       = $data['gender']['male']   ?? 0;
+                            $femaleCount     = $data['gender']['female'] ?? 0;
+                            $notGraduated    = $totalStudents - $graduatedCount;
+                            $totalGender     = $maleCount + $femaleCount;
+                            $malePct         = $totalGender > 0 ? round(($maleCount   / $totalGender) * 100) : 0;
+                        @endphp
 
-                        {{-- Age Range Summary --}}
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1" style="font-size: 0.75rem;">
-                                <span data-en="Age Range (18-35)" data-ar="نطاق العمر (18-35)">Age Range
-                                    (18-35)</span>
-                            </div>
-                            <div class="d-flex justify-content-between text-center gap-1">
-                                @foreach($data['age'] as $range => $count)
-                                    <div style="flex:1">
-                                        <div class="fw-bold" style="font-size: 0.8rem;">{{ $count }}</div>
-                                        <div class="text-muted" style="font-size: 0.6rem;">{{ $range }}</div>
+                        {{-- Gender + Graduation row --}}
+                        <div class="row g-2 mb-3">
+                            {{-- Male --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(13,110,253,0.07);">
+                                    <div class="fw-bold" style="font-size:1.2rem;color:#0d6efd;line-height:1.1;">
+                                        <i class="bi bi-gender-male" style="font-size:0.85rem;"></i> {{ $maleCount }}
                                     </div>
-                                @endforeach
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Male" data-ar="ذكر">Male</div>
+                                </div>
+                            </div>
+                            {{-- Female --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(220,53,69,0.07);">
+                                    <div class="fw-bold" style="font-size:1.2rem;color:#dc3545;line-height:1.1;">
+                                        <i class="bi bi-gender-female" style="font-size:0.85rem;"></i> {{ $femaleCount }}
+                                    </div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Female" data-ar="أنثى">Female</div>
+                                </div>
+                            </div>
+                            {{-- Uni. Graduated --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(255,193,7,0.1);">
+                                    <div class="fw-bold" style="font-size:1.2rem;color:#d97706;line-height:1.1;">
+                                        <i class="bi bi-award-fill" style="font-size:0.8rem;"></i> {{ $graduatedCount }}
+                                    </div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Graduated" data-ar="خريج">Graduated</div>
+                                </div>
+                            </div>
+                            {{-- Not Graduated --}}
+                            <div class="col-6">
+                                <div class="rounded-3 text-center py-2 px-1" style="background:rgba(108,117,125,0.07);">
+                                    <div class="fw-bold" style="font-size:1.2rem;color:#6c757d;line-height:1.1;">
+                                        <i class="bi bi-mortarboard" style="font-size:0.8rem;"></i> {{ $notGraduated }}
+                                    </div>
+                                    <div class="text-muted" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;" data-en="Not Grad." data-ar="غير خريج">Not Grad.</div>
+                                </div>
+                            </div>
+                            {{-- Age 18–35 Breakdown --}}
+                            <div class="col-12">
+                                <div class="rounded-3 py-2 px-2" style="background:rgba(75,180,230,0.06);">
+                                    <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
+                                        <i class="bi bi-bar-chart-fill me-1" style="color:#4bb4e6;"></i>
+                                        <span data-en="Age Distribution" data-ar="توزيع الأعمار">Age Distribution</span>
+                                    </div>
+                                    @php $maxAge = max(array_values($data['age']) ?: [1]); @endphp
+                                    @foreach($data['age'] as $range => $cnt)
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <div style="width:32px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;">{{ $range }}</div>
+                                            <div class="flex-grow-1" style="height:10px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;">
+                                                <div style="height:100%;width:{{ $maxAge > 0 ? round(($cnt/$maxAge)*100) : 0 }}%;background:linear-gradient(90deg,#4bb4e6,#74c9f0);border-radius:6px;transition:width .4s;"></div>
+                                            </div>
+                                            <div style="width:20px;font-size:0.7rem;font-weight:700;color:#4bb4e6;flex-shrink:0;">{{ $cnt }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Graduation & Status --}}
-                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
-                            <div class="d-flex flex-column">
-                                <span class="text-muted" style="font-size: 0.65rem;" data-en="Uni. Graduates"
-                                    data-ar="خريجو الجامعة">Uni. Graduates</span>
-                                <span class="fw-bold" style="font-size: 0.9rem;">
-                                    <i class="bi bi-award text-warning me-1"></i>{{ $data['graduated_count'] }}
-                                </span>
+                        {{-- Gender split bar --}}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between mb-1" style="font-size:0.68rem;">
+                                <span style="color:#0d6efd;font-weight:600;"><i class="bi bi-gender-male"></i> {{ $malePct }}%</span>
+                                <span style="color:#dc3545;font-weight:600;">{{ 100 - $malePct }}% <i class="bi bi-gender-female"></i></span>
                             </div>
-                            @php
-                                $acceptedCount = 0;
-                                foreach ($data['cohorts'] as $c)
-                                    $acceptedCount += ($c['accepted'] ?? 0);
-                            @endphp
-                            <div class="d-flex flex-column align-items-end">
-                                <span class="text-muted" style="font-size: 0.65rem;" data-en="Accepted"
-                                    data-ar="مقبول">Accepted</span>
-                                <span class="fw-bold text-success" style="font-size: 0.9rem;">
-                                    {{ $acceptedCount }}
-                                </span>
+                            <div class="progress" style="height:4px;border-radius:10px;">
+                                <div class="progress-bar" style="width:{{ $malePct }}%;background:#0d6efd;border-radius:10px 0 0 10px;"></div>
+                                <div class="progress-bar" style="width:{{ 100 - $malePct }}%;background:#dc3545;border-radius:0 10px 10px 0;"></div>
+                            </div>
+                        </div>
+
+                        {{-- Acceptance rate bar --}}
+                        <div>
+                            <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                <span class="text-muted" data-en="Acceptance Rate" data-ar="نسبة القبول">Acceptance Rate</span>
+                                <span class="fw-bold text-success">{{ $acceptedRatio }}%</span>
+                            </div>
+                            <div class="progress" style="height:5px;border-radius:10px;">
+                                <div class="progress-bar bg-success" style="width:{{ $acceptedRatio }}%;border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -626,6 +687,7 @@
             </div>
         @endforeach
     </div>
+
 
     {{-- ═══════════════════════════════════════════════════════ --}}
     {{-- SECTION 2: Charts --}}
