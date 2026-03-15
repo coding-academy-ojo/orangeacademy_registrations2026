@@ -42,8 +42,15 @@ class UserController extends Controller
         }
 
         if ($request->academy_id) {
-            $query->whereHas('enrollments.cohort.academy', function ($aq) use ($request) {
-                $aq->where('id', $request->academy_id);
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('enrollments.cohort.academy', function ($aq) use ($request) {
+                    $aq->where('id', $request->academy_id);
+                })
+                ->orWhere(function ($q2) use ($request) {
+                    // Also include users accepted for interview without enrollment
+                    $q2->where('filtration_status', 'Accepted for Interview')
+                        ->whereDoesntHave('enrollments');
+                });
             });
         }
 

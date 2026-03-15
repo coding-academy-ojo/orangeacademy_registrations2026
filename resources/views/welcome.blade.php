@@ -1054,7 +1054,7 @@
                     </div>
                     <h1 class="hero-title">
                         <span data-en="Learn to" data-ar="تعلم أن">Learn to</span><br>
-                        <span class="gradient" data-en="Code Your Future" data-ar="برمج مستقبلك">Code Your Future</span>
+                        <span class="gradient" data-en="Code Your Future" data-ar="تبرمج مستقبلكت">Code Your Future</span>
                     </h1>
                     <p class="hero-desc"
                         data-en="Master modern programming languages and frameworks. Join thousands of students transforming their careers with practical, industry-ready skills in PHP, Laravel, Node.js, and more."
@@ -1130,6 +1130,33 @@
         </div>
     </section>
 
+    {{-- ==================== VIDEO ==================== --}}
+    <section class="video-section" style="padding: 60px 0; background: #0a0a0f;">
+        <div class="container">
+            <div class="text-center mb-5">
+                <div class="section-badge" data-en="Learn More" data-ar="اعرف المزيد">Learn More</div>
+                <h2 class="section-title" data-en="Discover Orange Academy" data-ar="اكتشف أكاديمية أورنج">Discover Orange Academy</h2>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="video-container" style="position: relative; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(255, 121, 0, 0.2);">
+                        <iframe 
+                            width="100%" 
+                            height="500" 
+                            src="https://www.youtube.com/embed/TSY3Yob1tVQ?si=dETe88w-7bMg1V0g" 
+                            title="YouTube video player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerpolicy="strict-origin-when-cross-origin" 
+                            allowfullscreen
+                            style="display: block;">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     {{-- ==================== PROGRAMS ==================== --}}
     <section class="programs-section" id="programs">
         <div class="container">
@@ -1169,9 +1196,9 @@
                 </div>
                 <div class="program-card">
                     <div class="program-icon"><i class="bi bi-diagram-3"></i></div>
-                    <h5>Database Design</h5>
+                    <h5> Database Design</h5>
                     <p data-en="Master MySQL and PostgreSQL. Design efficient databases and optimize queries."
-                        dataار="أتقن MySQL وPostgreSQL. صمم قواعد بيانات فعالة وحسّن الاستعلامات.">Master MySQL and
+                        data-ar="أتقن MySQL وPostgreSQL. صمم قواعد بيانات فعالة وحسّن الاستعلامات.">Master MySQL and
                         PostgreSQL. Design efficient databases and optimize queries.</p>
                     <span class="program-tag">Essential Skill</span>
                 </div>
@@ -1200,7 +1227,7 @@
         <div class="container">
             <div class="text-center mb-5">
                 <div class="section-badge" data-en="Our Locations" data-ar="مواقعنا">Our Locations</div>
-                <h2 class="section-title" data-en="Join a Campus Near You" data-ar="انضم إلى حرم جامعي قريب منك">Join a
+                <h2 class="section-title" data-en="Join to Near Academy to you" data-ar="انضم لاقرب أكاديمية الك">Join a
                     Campus Near You</h2>
                 <p class="section-desc"
                     data-en="Click on a highlighted region on the map to view available academies and apply!"
@@ -1416,7 +1443,7 @@
         </div>
     </section>
 
-    {{-- ==================== ACADEMIES ==================== --}}
+    <!-- {{-- ==================== ACADEMIES ==================== --}}
     <section class="academies-section">
         <div class="container">
             <div class="text-center mb-5">
@@ -1458,7 +1485,7 @@
                 @endforelse
             </div>
         </div>
-    </section>
+    </section> -->
 
     {{-- ==================== CTA ==================== --}}
     <section class="cta-section">
@@ -1507,7 +1534,7 @@
             document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 40);
         });
 
-        // Language
+        // Language - Default to English, only change if explicitly set
         function setLang(lang) {
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn' + lang.charAt(0).toUpperCase() + lang.slice(1)).classList.add('active');
@@ -1518,8 +1545,14 @@
                 el.textContent = el.getAttribute('data-' + lang);
             });
         }
-        const saved = localStorage.getItem('lang') || 'en';
-        setLang(saved);
+        
+        // Always default to English on page load, only use saved language if explicitly set by user
+        const saved = localStorage.getItem('lang');
+        if (saved === 'ar') {
+            setLang('ar');
+        } else {
+            setLang('en');
+        }
 
         // Loop typing animation
         setInterval(() => {

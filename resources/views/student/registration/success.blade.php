@@ -28,9 +28,9 @@
 
                 <div class="card border-0 shadow-sm mb-5 overflow-hidden">
                     <div class="row g-0">
-                        <div class="col-md-4 bg-dark d-flex align-items-center justify-content-center p-4">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Orange_logo.svg" width="100"
-                                alt="Orange Logo" class="img-fluid">
+                        <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background-color: #000000;">
+                            <img src="{{ asset('storage/logo-orange.jpg') }}" width="120"
+                                alt="Orange Logo" class="img-fluid" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/7/72/Orange_logo.svg'; this.onerror=null;">
                         </div>
                         <div class="col-md-8 text-start p-4 bg-white">
                             <h5 class="fw-bold mb-3" data-en="About Orange Digital Center" data-ar="عن مركز أورنج الرقمي">

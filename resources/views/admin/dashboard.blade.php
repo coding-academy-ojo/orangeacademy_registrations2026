@@ -658,6 +658,50 @@
                                     @endforeach
                                 </div>
                             </div>
+
+                            {{-- Universities Breakdown --}}
+                            @if(!empty($data['universities']))
+                            <div class="col-12">
+                                <div class="rounded-3 py-2 px-2" style="background:rgba(108,117,225,0.06);">
+                                    <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
+                                        <i class="bi bi-building me-1" style="color:#6c75e1;"></i>
+                                        <span data-en="Top Universities" data-ar="أفضل الجامعات">Top Universities</span>
+                                    </div>
+                                    @php $maxUni = max(array_values($data['universities']) ?: [1]); @endphp
+                                    @foreach($data['universities'] as $uni => $cnt)
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <div style="width:80px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $uni }}">{{ $uni }}</div>
+                                            <div class="flex-grow-1" style="height:10px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;">
+                                                <div style="height:100%;width:{{ $maxUni > 0 ? round(($cnt/$maxUni)*100) : 0 }}%;background:linear-gradient(90deg,#6c75e1,#8b92f0);border-radius:6px;transition:width .4s;"></div>
+                                            </div>
+                                            <div style="width:20px;font-size:0.7rem;font-weight:700;color:#6c75e1;flex-shrink:0;">{{ $cnt }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Neighborhoods Breakdown --}}
+                            @if(!empty($data['neighborhoods']))
+                            <div class="col-12">
+                                <div class="rounded-3 py-2 px-2" style="background:rgba(255,121,0,0.06);">
+                                    <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
+                                        <i class="bi bi-geo-alt me-1" style="color:#ff7900;"></i>
+                                        <span data-en="Top Neighborhoods" data-ar="أفضل الأحياء">Top Neighborhoods</span>
+                                    </div>
+                                    @php $maxNb = max(array_values($data['neighborhoods']) ?: [1]); @endphp
+                                    @foreach($data['neighborhoods'] as $nb => $cnt)
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <div style="width:80px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $nb }}">{{ $nb }}</div>
+                                            <div class="flex-grow-1" style="height:10px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;">
+                                                <div style="height:100%;width:{{ $maxNb > 0 ? round(($cnt/$maxNb)*100) : 0 }}%;background:linear-gradient(90deg,#ff7900,#ffa040);border-radius:6px;transition:width .4s;"></div>
+                                            </div>
+                                            <div style="width:20px;font-size:0.7rem;font-weight:700;color:#ff7900;flex-shrink:0;">{{ $cnt }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
                         </div>
 
                         {{-- Gender split bar --}}

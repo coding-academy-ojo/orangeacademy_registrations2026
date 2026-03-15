@@ -71,22 +71,51 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0"><i class="bi bi-person-video2 text-orange me-2"></i> Interviews</h4>
-        <button class="btn btn-orange" data-bs-toggle="modal" data-bs-target="#criteriaModal">
-            <i class="bi bi-sliders me-1"></i> Assessment Checklist
-        </button>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.interviews.export', ['academy' => $activeTab]) }}" class="btn btn-success" target="_blank">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Accepted
+            </a>
+            <button class="btn btn-orange" data-bs-toggle="modal" data-bs-target="#criteriaModal">
+                <i class="bi bi-sliders me-1"></i> Assessment Checklist
+            </button>
+        </div>
     </div>
 
     <!-- Academy Tabs -->
     <ul class="nav nav-pills gap-2 mb-4">
+        <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'all' ? 'active' : '' }}"
+                href="{{ route('admin.interviews.index', ['academy' => 'all', 'status' => $statusFilter]) }}">
+                <i class="bi bi-grid me-1"></i> All Academies
+            </a>
+        </li>
         @foreach($academies as $academy)
             <li class="nav-item">
                 <a class="nav-link {{ $activeTab == $academy->id ? 'active' : '' }}"
-                    href="{{ route('admin.interviews.index', ['academy' => $academy->id]) }}">
+                    href="{{ route('admin.interviews.index', ['academy' => $academy->id, 'status' => $statusFilter]) }}">
                     {{ $academy->name }}
                 </a>
             </li>
         @endforeach
     </ul>
+
+    <!-- Search Filter -->
+    <div class="mb-3">
+        <form method="GET" action="{{ route('admin.interviews.index') }}" class="d-flex gap-2">
+            <input type="hidden" name="academy" value="{{ $activeTab }}">
+            <input type="hidden" name="status" value="{{ $statusFilter }}">
+            <div class="input-group" style="max-width: 400px;">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search by name, email or phone..." value="{{ request('search') }}">
+                @if(request('search'))
+                    <a href="{{ route('admin.interviews.index', ['academy' => $activeTab, 'status' => $statusFilter]) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                @endif
+                <button class="btn btn-orange" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
 
     <!-- Status Filters -->
     <div class="mb-4 d-flex gap-2">
@@ -133,7 +162,7 @@
                             @foreach($students as $student)
                                 @php
                                     $enrollment = $student->enrollments->first();
-                                    $evaluation = $enrollment->interviewEvaluation;
+                                    $evaluation = $enrollment ? $enrollment->interviewEvaluation : null;
                                 @endphp
                                 <tr>
                                     <td class="ps-4">
@@ -152,18 +181,26 @@
                                     </td>
                                     <td>{{ $student->email }}</td>
                                     <td>{{ $student->profile->phone ?? '-' }}</td>
-                                    <td><span class="badge bg-light text-dark border">{{ $enrollment->cohort->name ?? '-' }}</span>
+                                    <td>
+                                        @if($enrollment && $enrollment->cohort)
+                                            <span class="badge bg-light text-dark border">{{ $enrollment->cohort->name }}</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle me-1"></i>No Cohort</span>
+                                        @endif
                                     </td>
                                     <td>
-                                        @if($enrollment->status == 'enrolled')
+                                        @if($enrollment && $enrollment->status == 'enrolled')
                                             <span class="badge bg-success rounded-pill px-3 py-2"><i
                                                     class="bi bi-check-circle me-1"></i> Enrolled</span>
-                                        @elseif($enrollment->status == 'rejected')
+                                        @elseif($enrollment && $enrollment->status == 'rejected')
                                             <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-x-circle me-1"></i>
                                                 Rejected</span>
-                                        @else
+                                        @elseif($enrollment && $enrollment->status == 'pending')
                                             <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i
                                                     class="bi bi-hourglass-split me-1"></i> Pending Result</span>
+                                        @else
+                                            <span class="badge bg-info rounded-pill px-3 py-2"><i
+                                                    class="bi bi-person-check me-1"></i> Awaiting Interview</span>
                                         @endif
                                     </td>
                                     <td>
@@ -178,14 +215,21 @@
                                         @endif
                                     </td>
                                     <td class="text-end pe-4">
-                                        <button class="btn btn-sm btn-outline-orange"
-                                            onclick="openEvaluationModal({{ $enrollment->id }}, '{{ json_encode($evaluation ? $evaluation->scores : []) }}', '{{ addslashes($evaluation->notes ?? '') }}', '{{ $student->profile->first_name_en ?? 'Student' }}')">
-                                            @if($evaluation)
-                                                <i class="bi bi-pencil-square"></i> Edit
-                                            @else
-                                                <i class="bi bi-star"></i> Evaluate
-                                            @endif
-                                        </button>
+                                        @if($enrollment)
+                                            <button class="btn btn-sm btn-outline-orange"
+                                                onclick="openEvaluationModal({{ $enrollment->id }}, '{{ json_encode($evaluation ? $evaluation->scores : []) }}', '{{ addslashes($evaluation->notes ?? '') }}', '{{ $student->profile->first_name_en ?? 'Student' }}')">
+                                                @if($evaluation)
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                @else
+                                                    <i class="bi bi-star"></i> Evaluate
+                                                @endif
+                                            </button>
+                                        @else
+                                            <button class="btn btn-sm btn-orange"
+                                                onclick="openNewEnrollmentModal({{ $student->id }}, '{{ $student->profile->first_name_en ?? 'Student' }}', '{{ $activeTab }}')">
+                                                <i class="bi bi-plus-circle me-1"></i> Enroll & Evaluate
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -346,8 +390,108 @@
         </div>
     </div>
 
+    <!-- New Enrollment & Evaluation Modal -->
+    <div class="modal fade" id="newEnrollmentModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <form id="newEnrollmentForm" method="POST" class="modal-content">
+                @csrf
+                <input type="hidden" name="action" id="newEvalAction" value="save">
+                <input type="hidden" name="academy_id" id="newAcademyId" value="">
+                <input type="hidden" name="cohort_id" id="newCohortId" value="">
+
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill text-orange me-2"></i> Enroll & Evaluate <span
+                            id="newEvalStudentName" class="text-orange"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @if($criteria->count() == 0)
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> You must define an assessment checklist for
+                            this academy first!
+                        </div>
+                    @else
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2">Select Academy</label>
+                            <select id="academySelect" class="form-select" required onchange="updateCohorts()">
+                                <option value="">-- Select Academy --</option>
+                                @foreach($academies as $academy)
+                                    <option value="{{ $academy->id }}">{{ $academy->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2">Select Cohort</label>
+                            <select id="cohortSelect" class="form-select" required disabled onchange="document.getElementById('newCohortId').value = this.value">
+                                <option value="">-- Select Academy First --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="fw-bold mb-3 text-uppercase text-muted"
+                                    style="font-size:0.8rem; letter-spacing:1px;">Interview Checklist</h6>
+                                @foreach($criteria as $c)
+                                    <div
+                                        class="d-flex justify-content-between align-items-center mb-3 bg-light p-3 rounded-3 border">
+                                        <div>
+                                            <div class="fw-bold">{{ $c->name }}</div>
+                                            <div class="small text-muted">Max Score: {{ $c->weight }}</div>
+                                        </div>
+                                        <div style="width: 100px;">
+                                            <input type="number" class="form-control form-control-lg score-input new-eval-input"
+                                                name="scores[{{ $c->id }}]" id="new_score_{{ $c->id }}" min="0" max="{{ $c->weight }}"
+                                                data-weight="{{ $c->weight }}" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                <div class="mb-3 mt-4">
+                                    <label class="fw-bold mb-2">Admin Notes / Comments</label>
+                                    <textarea name="notes" id="newEvalNotes" class="form-control" rows="3"
+                                        placeholder="Enter any specific feedback about this candidate..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="position-sticky" style="top: 20px;">
+                                    <h6 class="fw-bold mb-3 text-uppercase text-muted"
+                                        style="font-size:0.8rem; letter-spacing:1px;">Total Score</h6>
+                                    <div class="total-score-box">
+                                        <div class="total-score-num" id="newLiveTotalScore">0</div>
+                                        <div class="text-muted mt-1 fw-bold">out of {{ $totalPoints }}</div>
+                                        <div class="progress mt-3" style="height: 10px;">
+                                            <div id="newLiveProgressBar" class="progress-bar bg-orange" role="progressbar"
+                                                style="width: 0%;"></div>
+                                        </div>
+                                        <div id="newPassFailBadge" class="mt-3 badge bg-secondary w-100 py-2 fs-6">Pending</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    @if($criteria->count() > 0)
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-danger" onclick="submitNewEval('reject')"><i
+                                    class="bi bi-x-circle me-1"></i> Reject</button>
+                            <button type="button" class="btn btn-secondary" onclick="submitNewEval('save')"><i
+                                    class="bi bi-save me-1"></i> Save Draft</button>
+                            <button type="button" class="btn btn-success" onclick="submitNewEval('accept')"><i
+                                    class="bi bi-check-circle me-1"></i> Accept to Join</button>
+                        </div>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let criteriaIndex = {{ $criteria->count() > 0 ? $criteria->count() : 1 }};
+        
+        const cohortsByAcademy = @json(\App\Models\Cohort::with('academy')->get()->groupBy('academy_id'));
 
         function addCriteriaRow() {
             const container = document.getElementById('criteriaContainer');
@@ -367,6 +511,28 @@
                     `;
             container.appendChild(row);
             criteriaIndex++;
+        }
+
+        function updateCohorts() {
+            const academyId = document.getElementById('academySelect').value;
+            const cohortSelect = document.getElementById('cohortSelect');
+            const academyIdInt = parseInt(academyId);
+            
+            cohortSelect.innerHTML = '<option value="">-- Select Cohort --</option>';
+            document.getElementById('newAcademyId').value = academyId;
+            document.getElementById('newCohortId').value = '';
+            
+            if (cohortsByAcademy[academyIdInt]) {
+                cohortSelect.disabled = false;
+                cohortsByAcademy[academyIdInt].forEach(cohort => {
+                    const option = document.createElement('option');
+                    option.value = cohort.id;
+                    option.textContent = cohort.name;
+                    cohortSelect.appendChild(option);
+                });
+            } else {
+                cohortSelect.disabled = true;
+            }
         }
 
         function openEvaluationModal(enrollmentId, scoresJson, notes, name) {
@@ -446,6 +612,108 @@
         document.querySelectorAll('.eval-input').forEach(input => {
             input.addEventListener('input', calculateTotal);
             input.addEventListener('change', calculateTotal);
+        });
+
+        // New Enrollment Modal Functions
+        function openNewEnrollmentModal(userId, name, academyId) {
+            document.getElementById('newEnrollmentForm').action = `/admin/interviews/evaluate-user/${userId}`;
+            document.getElementById('newEvalStudentName').innerText = name;
+            document.getElementById('newAcademyId').value = academyId === 'all' ? '' : academyId;
+            document.getElementById('newCohortId').value = '';
+            document.getElementById('cohortSelect').value = '';
+            document.getElementById('academySelect').value = academyId === 'all' ? '' : academyId;
+            document.getElementById('newEvalNotes').value = '';
+            
+            // Reset cohort select
+            const cohortSelect = document.getElementById('cohortSelect');
+            if (academyId !== 'all' && academyId) {
+                cohortSelect.disabled = false;
+                cohortSelect.innerHTML = '<option value="">-- Select Cohort --</option>';
+                if (cohortsByAcademy[academyId]) {
+                    cohortsByAcademy[academyId].forEach(cohort => {
+                        const option = document.createElement('option');
+                        option.value = cohort.id;
+                        option.textContent = cohort.name;
+                        cohortSelect.appendChild(option);
+                    });
+                }
+            } else {
+                cohortSelect.disabled = true;
+                cohortSelect.innerHTML = '<option value="">-- Select Academy First --</option>';
+            }
+            
+            document.querySelectorAll('.new-eval-input').forEach(input => {
+                input.value = '';
+            });
+            
+            calculateNewTotal();
+            new bootstrap.Modal(document.getElementById('newEnrollmentModal')).show();
+        }
+
+        function submitNewEval(action) {
+            const cohortId = document.getElementById('newCohortId').value;
+            if (!cohortId) {
+                alert('Please select a cohort first!');
+                return;
+            }
+            
+            document.getElementById('newEvalAction').value = action;
+
+            let valid = true;
+            document.querySelectorAll('.new-eval-input').forEach(input => {
+                let val = parseFloat(input.value);
+                let max = parseFloat(input.getAttribute('max'));
+                if (isNaN(val) || val > max || val < 0) {
+                    valid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (valid) {
+                document.getElementById('newEnrollmentForm').submit();
+            } else {
+                alert('Please ensure all scores are filled correctly within their maximum limits.');
+            }
+        }
+
+        function calculateNewTotal() {
+            let total = 0;
+            let maxTotal = {{ $totalPoints ?? 0 }};
+
+            document.querySelectorAll('.new-eval-input').forEach(input => {
+                let val = parseFloat(input.value) || 0;
+                let max = parseFloat(input.getAttribute('max'));
+                if (val > max) { val = max; input.value = val; }
+                total += val;
+            });
+
+            document.getElementById('newLiveTotalScore').innerText = total;
+
+            let percentage = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
+            let bar = document.getElementById('newLiveProgressBar');
+            bar.style.width = percentage + '%';
+
+            let badge = document.getElementById('newPassFailBadge');
+            if (percentage >= 70) {
+                bar.className = 'progress-bar bg-success';
+                badge.className = 'mt-3 badge bg-success w-100 py-2 fs-6';
+                badge.innerText = 'Passing Score';
+            } else if (percentage >= 40) {
+                bar.className = 'progress-bar bg-warning text-dark';
+                badge.className = 'mt-3 badge bg-warning text-dark w-100 py-2 fs-6';
+                badge.innerText = 'Borderline';
+            } else {
+                bar.className = 'progress-bar bg-danger';
+                badge.className = 'mt-3 badge bg-danger w-100 py-2 fs-6';
+                badge.innerText = 'Failing Score';
+            }
+        }
+
+        document.querySelectorAll('.new-eval-input').forEach(input => {
+            input.addEventListener('input', calculateNewTotal);
+            input.addEventListener('change', calculateNewTotal);
         });
     </script>
 @endsection

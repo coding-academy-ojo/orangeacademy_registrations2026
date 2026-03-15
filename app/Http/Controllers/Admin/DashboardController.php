@@ -64,6 +64,14 @@ class DashboardController extends Controller
                 ->pluck('count', 'university')
                 ->toArray();
 
+            $neighborhoodStats = \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)
+                ->whereNotNull('neighborhood')
+                ->where('neighborhood', '!=', '')
+                ->selectRaw('neighborhood, count(*) as count')
+                ->groupBy('neighborhood')
+                ->pluck('count', 'neighborhood')
+                ->toArray();
+
             $cohortStats = Enrollment::whereHas('cohort', function ($q) use ($academy) {
                 $q->where('academy_id', $academy->id);
             })
@@ -115,6 +123,7 @@ class DashboardController extends Controller
                 'genderStats' => $genderStats,
                 'educationStats' => $educationStats,
                 'universityStats' => $universityStats,
+                'neighborhoodStats' => $neighborhoodStats,
                 'cohortData' => $cohortData,
                 'studentsList' => $studentsList,
             ];
@@ -300,6 +309,26 @@ class DashboardController extends Controller
                 ->whereNotNull('graduation_year')
                 ->count();
 
+            // University stats for this academy
+            $universityStatsArray = \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)
+                ->whereNotNull('university')
+                ->selectRaw('university, count(*) as count')
+                ->groupBy('university')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->pluck('count', 'university')
+                ->toArray();
+
+            // Neighborhood stats for this academy
+            $neighborhoodStatsArray = \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)
+                ->whereNotNull('neighborhood')
+                ->selectRaw('neighborhood, count(*) as count')
+                ->groupBy('neighborhood')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->pluck('count', 'neighborhood')
+                ->toArray();
+
             $cohortStatsArray = [];
             if ($totalRegistrations > 0) {
                 $cohortsData = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
@@ -338,6 +367,8 @@ class DashboardController extends Controller
                 'education' => $educationStatsArray,
                 'age' => $ageStatsArray,
                 'graduated_count' => $graduatedCount,
+                'universities' => $universityStatsArray,
+                'neighborhoods' => $neighborhoodStatsArray,
                 'cohorts' => $cohortStatsArray,
             ];
         }

@@ -1,153 +1,214 @@
 @extends('layouts.student')
 @section('title', 'Step 4 - Academy & Cohort')
-
 @section('content')
     @include('student.registration._progress', ['step' => 4])
 
+    @php
+        use Illuminate\Support\Facades\Auth;
+        $enrollment = Auth::user()->enrollments()->first();
+        $isLocked = $enrollment && in_array($enrollment->status, ['applied', 'pending', 'enrolled']);
+    @endphp
+
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white py-4 border-0 rounded-top-4">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-building text-orange me-2"></i>Select Academy</h5>
-            <p class="text-muted small mt-1 mb-0" data-en="Choose the academy closely located to you."
-                data-ar="اختر الأكاديمية الأقرب إليك.">Choose the academy closely located to you.</p>
+            <h5 class="mb-0 fw-bold"><i class="bi bi-building text-orange me-2"></i>
+                @if($isLocked)
+                    <span data-en="Your Academy & Program" data-ar="أكاديميتك وبرنامجك">Your Academy & Program</span>
+                @else
+                    <span data-en="Select Academy" data-ar="اختر الأكاديمية">Select Academy</span>
+                @endif
+            </h5>
+            @if($isLocked)
+                <div class="alert alert-success mt-2 mb-0 py-2 px-3" style="border-radius: 8px; border-left: 4px solid #198754 !important;">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span data-en="You have already selected your academy and program. Contact support if you need to make changes."
+                          data-ar="لقد اخترت أكاديميتك وبرنامجك بالفعل. تواصل مع الدعم إذا كنت بحاجة لإجراء تغييرات.">
+                        You have already selected your academy and program. Contact support if you need to make changes.
+                    </span>
+                </div>
+            @else
+                <p class="text-muted small mt-1 mb-0" data-en="Choose the academy closely located to you."
+                    data-ar="اختر الأكاديمية الأقرب إليك.">Choose the academy closely located to you.</p>
+            @endif
         </div>
         <div class="card-body p-4 pt-0">
-            <form method="POST" action="{{ route('student.save.enrollment') }}">
-                @csrf
-
-                <div class="row g-4 mb-4">
-                    @foreach($academies as $academy)
-                        @if($academy->cohorts->count())
-                            @php
-                                // Default fallbacks
-                                $mapLink = '#';
-                                $img = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=400';
-
-                                if ($academy->location_link) {
-                                    $mapLink = $academy->location_link;
-                                } elseif (stripos($academy->name, 'amman') !== false || stripos($academy->name, 'عمان') !== false) {
-                                    $mapLink = 'https://share.google/XozgryZJ7KMOtRVYT';
-                                } elseif (stripos($academy->name, 'irbid') !== false || stripos($academy->name, 'إربد') !== false) {
-                                    $mapLink = 'https://share.google/X6uFlL5pRYOBWXFfq';
-                                } elseif (stripos($academy->name, 'zarqa') !== false || stripos($academy->name, 'زرقاء') !== false) {
-                                    $mapLink = 'https://share.google/8wCS0fi2EVErzGdMD';
-                                } elseif (stripos($academy->name, 'balqa') !== false || stripos($academy->name, 'بلقاء') !== false) {
-                                    $mapLink = 'https://maps.app.goo.gl/JFycSFEZNE77qhqN6';
-                                }
-
-                                if ($academy->image) {
-                                    $img = asset('storage/' . $academy->image);
-                                } elseif (stripos($academy->name, 'amman') !== false || stripos($academy->name, 'عمان') !== false) {
-                                    $img = 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?auto=format&fit=crop&q=80&w=400'; // Modern city feel
-                                } elseif (stripos($academy->name, 'irbid') !== false || stripos($academy->name, 'إربد') !== false) {
-                                    $img = 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=400'; // University/greenery feel
-                                } elseif (stripos($academy->name, 'zarqa') !== false || stripos($academy->name, 'زرقاء') !== false) {
-                                    $img = 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=400'; // Urban feel
-                                } elseif (stripos($academy->name, 'balqa') !== false || stripos($academy->name, 'بلقاء') !== false) {
-                                    $img = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400'; // Academic feel
-                                }
-                            @endphp
-                            <div class="col-md-6 col-lg-3">
-                                <label class="d-block w-100">
-                                    <input type="radio" name="academy_selection" id="academy_{{ $academy->id }}" class="d-none peer-academy-radio academy_selection"
-                                        value="{{ $academy->id }}" onchange="showCohorts({{ $academy->id }})">
-                                    <div class="card h-100 border-2 academy-card shadow-sm"
-                                        style="cursor:pointer; border-radius: 12px; transition: all 0.3s; overflow:hidden;">
-                                        <!-- Image -->
-                                        <div style="height: 140px; overflow: hidden; position: relative;">
-                                            <img src="{{ $img }}" class="card-img-top w-100 h-100" alt="{{ $academy->name }}"
-                                                style="object-fit: cover; transition: transform 0.5s;">
-                                            <div class="position-absolute top-0 end-0 p-2">
-                                                <div class="academy-check-icon shadow-sm d-flex align-items-center justify-content-center bg-white rounded-circle"
-                                                    style="width: 28px; height: 28px; opacity: 0; transform: scale(0.5); transition: 0.3s;">
-                                                    <i class="bi bi-check-lg text-success" style="font-size: 1.2rem;"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-body text-center p-3 d-flex flex-column justify-content-between">
-                                            <h6 class="fw-bold mb-2 academy-title" style="transition: 0.3s;">{{ $academy->name }}
-                                            </h6>
-                                            <div>
-                                                <a href="{{ $mapLink }}" target="_blank"
-                                                    class="text-decoration-none small text-muted d-inline-block mt-1 map-link"
-                                                    onclick="event.stopPropagation()">
-                                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                                    <span data-en="Location Link" data-ar="رابط الموقع">Location Link</span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </label>
+            @if($isLocked && $enrollment && $enrollment->cohort)
+                @php
+                    $selectedAcademy = $enrollment->cohort->academy;
+                @endphp
+                <div class="text-center py-4">
+                    <div class="card border-2 shadow-sm mx-auto" style="max-width: 400px; border-radius: 16px; border-color: #198754 !important;">
+                        @if($selectedAcademy->image)
+                            <img src="{{ asset('storage/' . $selectedAcademy->image) }}" class="card-img-top" alt="{{ $selectedAcademy->name }}" style="height: 150px; object-fit: cover; border-radius: 14px 14px 0 0;">
+                        @else
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 150px; border-radius: 14px 14px 0 0;">
+                                <i class="bi bi-building text-muted" style="font-size: 3rem;"></i>
                             </div>
                         @endif
-                    @endforeach
-                </div>
-
-                <!-- Cohorts Containers -->
-                <div id="cohorts_master_container" style="display:none;">
-                    <h5 class="fw-bold mb-3 mt-4 border-top pt-4">
-                        <i class="bi bi-layers text-orange me-2"></i>
-                        <span data-en="Select Program" data-ar="البرنامج الأكاديمي">Select Program</span>
-                    </h5>
-                    @foreach($academies as $academy)
-                        @if($academy->cohorts->count())
-                            <div class="academy-cohort-group" id="cohort_group_{{ $academy->id }}" style="display: none;">
-                                @if($academy->registration_rules)
-                                    <div class="alert alert-warning mb-4 shadow-sm border-0" style="background-color: #fff9e6; border-radius: 12px; border-left: 5px solid #ffc107 !important;">
-                                        <div class="d-flex align-items-start">
-                                            <i class="bi bi-info-circle-fill text-warning fs-4 me-3 mt-1"></i>
-                                            <div>
-                                                <h6 class="fw-bold mb-2 text-dark">
-                                                    <span data-en="Registration Rules & Conditions" data-ar="شروط وأحكام التسجيل">Registration Rules & Conditions</span>
-                                                </h6>
-                                                <div class="text-dark small lh-lg" style="white-space: pre-line;">
-                                                    {{ $academy->registration_rules }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div class="card-body text-center">
+                            <h5 class="fw-bold text-success mb-1">{{ $selectedAcademy->name }}</h5>
+                            <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ $selectedAcademy->location }}</p>
+                            <hr>
+                            <h6 class="fw-bold mb-1">{{ $enrollment->cohort->name }}</h6>
+                            <p class="text-muted small mb-0">{{ $enrollment->cohort->start_date->format('M d') }} - {{ $enrollment->cohort->end_date->format('M d, y') }}</p>
+                            <div class="mt-3">
+                                @if($enrollment->status === 'applied')
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Application Submitted</span>
+                                @elseif($enrollment->status === 'pending')
+                                    <span class="badge bg-info px-3 py-2"><i class="bi bi-clock me-1"></i> Pending Interview</span>
+                                @elseif($enrollment->status === 'enrolled')
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> Enrolled</span>
                                 @endif
-                                <div class="row g-3">
-                                    @foreach($academy->cohorts as $cohort)
-                                        <div class="col-md-6">
-                                            <label class="d-block w-100 h-100">
-                                                <input type="radio" name="cohort_id" id="cohort_{{ $cohort->id }}" value="{{ $cohort->id }}" class="d-none peer-radio cohort_id"
-                                                    {{ optional($enrollment)->cohort_id == $cohort->id ? 'checked' : '' }} required>
-                                                <div class="card h-100 border-2 p-3 cohort-card shadow-sm"
-                                                    style="cursor:pointer;border-color:var(--orange-grey-300); border-radius: 12px; transition: 0.3s;">
-                                                    <h6 class="fw-bold mb-1">{{ $cohort->name }}</h6>
-                                                    <p class="text-muted small mb-3">{{ Str::limit($cohort->description, 80) }}</p>
-                                                    <div class="d-flex gap-3 small mt-auto">
-                                                        <span><i
-                                                                class="bi bi-calendar3 me-1"></i>{{ $cohort->start_date->format('M d') }}
-                                                            - {{ $cohort->end_date->format('M d, y') }}</span>
-                                                        <span class="badge bg-success opacity-75">{{ ucfirst($cohort->status) }}</span>
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    @endforeach
-                                </div>
                             </div>
-                        @endif
-                    @endforeach
-                </div>
-
-                @if($academies->flatMap->cohorts->isEmpty())
-                    <div class="text-center py-5 text-muted">
-                        <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
-                        <span data-en="No active programs available at the moment."
-                            data-ar="لا يوجد برامج نشطة في الوقت الحالي.">No active programs available at the moment.</span>
+                        </div>
                     </div>
-                @endif
+                </div>
 
                 <div class="d-flex justify-content-between mt-5 pt-3 border-top">
-                    <a href="{{ route('student.step', 3) }}" class="btn btn-outline-secondary px-4 py-2 rounded-3"><i
-                            class="bi bi-arrow-left me-2"></i><span data-en="Back" data-ar="رجوع">Back</span></a>
-                    <button type="submit" class="btn btn-orange px-4 py-2 rounded-3 shadow-sm"><span
-                            data-en="Save & Continue" data-ar="حفظ ومتابعة">Save & Continue</span> <i
-                            class="bi bi-arrow-right ms-2"></i></button>
+                    <a href="{{ route('student.step', 3) }}" class="btn btn-outline-secondary px-4 py-2 rounded-3">
+                        <i class="bi bi-arrow-left me-2"></i><span data-en="Back" data-ar="رجوع">Back</span>
+                    </a>
+                    <a href="{{ route('student.step', 5) }}" class="btn btn-orange px-4 py-2 rounded-3 shadow-sm">
+                        <span data-en="Continue" data-ar="متابعة">Continue</span> <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
                 </div>
-            </form>
+            @else
+                <form method="POST" action="{{ route('student.save.enrollment') }}">
+                    @csrf
+
+                    <div class="row g-4 mb-4">
+                        @foreach($academies as $academy)
+                            @if($academy->cohorts->count())
+                                @php
+                                    // Default fallbacks
+                                    $mapLink = '#';
+                                    $img = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=400';
+
+                                    if ($academy->location_link) {
+                                        $mapLink = $academy->location_link;
+                                    } elseif (stripos($academy->name, 'amman') !== false || stripos($academy->name, 'عمان') !== false) {
+                                        $mapLink = 'https://share.google/XozgryZJ7KMOtRVYT';
+                                    } elseif (stripos($academy->name, 'irbid') !== false || stripos($academy->name, 'إربد') !== false) {
+                                        $mapLink = 'https://share.google/X6uFlL5pRYOBWXFfq';
+                                    } elseif (stripos($academy->name, 'zarqa') !== false || stripos($academy->name, 'زرقاء') !== false) {
+                                        $mapLink = 'https://share.google/8wCS0fi2EVErzGdMD';
+                                    } elseif (stripos($academy->name, 'balqa') !== false || stripos($academy->name, 'بلقاء') !== false) {
+                                        $mapLink = 'https://maps.app.goo.gl/JFycSFEZNE77qhqN6';
+                                    }
+
+                                    if ($academy->image) {
+                                        $img = asset('storage/' . $academy->image);
+                                    } elseif (stripos($academy->name, 'amman') !== false || stripos($academy->name, 'عمان') !== false) {
+                                        $img = 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?auto=format&fit=crop&q=80&w=400';
+                                    } elseif (stripos($academy->name, 'irbid') !== false || stripos($academy->name, 'إربد') !== false) {
+                                        $img = 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=400';
+                                    } elseif (stripos($academy->name, 'zarqa') !== false || stripos($academy->name, 'زرقاء') !== false) {
+                                        $img = 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=400';
+                                    } elseif (stripos($academy->name, 'balqa') !== false || stripos($academy->name, 'بلقاء') !== false) {
+                                        $img = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=400';
+                                    }
+                                @endphp
+                                <div class="col-md-6 col-lg-3">
+                                    <label class="d-block w-100">
+                                        <input type="radio" name="academy_selection" id="academy_{{ $academy->id }}" class="d-none peer-academy-radio academy_selection"
+                                            value="{{ $academy->id }}" onchange="showCohorts({{ $academy->id }})">
+                                        <div class="card h-100 border-2 academy-card shadow-sm"
+                                            style="cursor:pointer; border-radius: 12px; transition: all 0.3s; overflow:hidden;">
+                                            <div style="height: 140px; overflow: hidden; position: relative;">
+                                                <img src="{{ $img }}" class="card-img-top w-100 h-100" alt="{{ $academy->name }}"
+                                                    style="object-fit: cover; transition: transform 0.5s;">
+                                                <div class="position-absolute top-0 end-0 p-2">
+                                                    <div class="academy-check-icon shadow-sm d-flex align-items-center justify-content-center bg-white rounded-circle"
+                                                        style="width: 28px; height: 28px; opacity: 0; transform: scale(0.5); transition: 0.3s;">
+                                                        <i class="bi bi-check-lg text-success" style="font-size: 1.2rem;"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body text-center p-3 d-flex flex-column justify-content-between">
+                                                <h6 class="fw-bold mb-2 academy-title" style="transition: 0.3s;">{{ $academy->name }}
+                                                </h6>
+                                                <div>
+                                                    <a href="{{ $mapLink }}" target="_blank"
+                                                        class="text-decoration-none small text-muted d-inline-block mt-1 map-link"
+                                                        onclick="event.stopPropagation()">
+                                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                                        <span data-en="Location Link" data-ar="رابط الموقع">Location Link</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <div id="cohorts_master_container" style="display:none;">
+                        <h5 class="fw-bold mb-3 mt-4 border-top pt-4">
+                            <i class="bi bi-layers text-orange me-2"></i>
+                            <span data-en="Select Program" data-ar="البرنامج الأكاديمي">Select Program</span>
+                        </h5>
+                        @foreach($academies as $academy)
+                            @if($academy->cohorts->count())
+                                <div class="academy-cohort-group" id="cohort_group_{{ $academy->id }}" style="display: none;">
+                                    @if($academy->registration_rules)
+                                        <div class="alert alert-warning mb-4 shadow-sm border-0" style="background-color: #fff9e6; border-radius: 12px; border-left: 5px solid #ffc107 !important;">
+                                            <div class="d-flex align-items-start">
+                                                <i class="bi bi-info-circle-fill text-warning fs-4 me-3 mt-1"></i>
+                                                <div>
+                                                    <h6 class="fw-bold mb-2 text-dark">
+                                                        <span data-en="Registration Rules & Conditions" data-ar="شروط وأحكام التسجيل">Registration Rules & Conditions</span>
+                                                    </h6>
+                                                    <div class="registration-rules-content text-dark" style="line-height: 1.8;">
+                                                        {!! $academy->registration_rules !!}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <div class="row g-3">
+                                        @foreach($academy->cohorts as $cohort)
+                                            <div class="col-md-6">
+                                                <label class="d-block w-100 h-100">
+                                                    <input type="radio" name="cohort_id" id="cohort_{{ $cohort->id }}" value="{{ $cohort->id }}" class="d-none peer-radio cohort_id"
+                                                        {{ optional($enrollment)->cohort_id == $cohort->id ? 'checked' : '' }} required>
+                                                    <div class="card h-100 border-2 p-3 cohort-card shadow-sm"
+                                                        style="cursor:pointer;border-color:var(--orange-grey-300); border-radius: 12px; transition: 0.3s;">
+                                                        <h6 class="fw-bold mb-1">{{ $cohort->name }}</h6>
+                                                        <p class="text-muted small mb-3">{{ Str::limit($cohort->description, 80) }}</p>
+                                                        <div class="d-flex gap-3 small mt-auto">
+                                                            <span><i
+                                                                    class="bi bi-calendar3 me-1"></i>{{ $cohort->start_date->format('M d') }}
+                                                                - {{ $cohort->end_date->format('M d, y') }}</span>
+                                                            <span class="badge bg-success opacity-75">{{ ucfirst($cohort->status) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    @if($academies->flatMap->cohorts->isEmpty())
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                            <span data-en="No active programs available at the moment."
+                                data-ar="لا يوجد برامج نشطة في الوقت الحالي.">No active programs available at the moment.</span>
+                        </div>
+                    @endif
+
+                    <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                        <a href="{{ route('student.step', 3) }}" class="btn btn-outline-secondary px-4 py-2 rounded-3"><i
+                                class="bi bi-arrow-left me-2"></i><span data-en="Back" data-ar="رجوع">Back</span></a>
+                        <button type="submit" class="btn btn-orange px-4 py-2 rounded-3 shadow-sm"><span
+                                data-en="Save & Continue" data-ar="حفظ ومتابعة">Save & Continue</span> <i
+                                class="bi bi-arrow-right ms-2"></i></button>
+                    </div>
+                </form>
+            @endif
         </div>
     </div>
 

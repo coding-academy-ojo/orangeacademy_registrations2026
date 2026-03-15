@@ -1,7 +1,10 @@
 @extends('layouts.admin')
 @section('page-title', isset($academy) ? 'Edit Academy' : 'New Academy')
 @section('content')
-    <div class="card" style="max-width:600px;">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    
+    <div class="card" style="max-width:800px;">
         <div class="card-body p-4">
             <form method="POST" enctype="multipart/form-data"
                 action="{{ isset($academy) ? route('admin.academies.update', $academy) : route('admin.academies.store') }}">
@@ -43,22 +46,45 @@
                             </div>
                         @endif
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Registration Rules (Shown to student on Step 4)</label>
-                            <textarea name="registration_rules" class="form-control" rows="4"
-                                placeholder="Enter registration rules, conditions, or instructions specific to this academy...">{{ old('registration_rules', $academy->registration_rules ?? '') }}</textarea>
-                            <div class="form-text">You can use basic line breaks. These will be shown to users when they
-                                select this academy.</div>
-                        </div>
-                    </div>
+                </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-orange">{{ isset($academy) ? 'Update' : 'Create' }}
-                            Academy</button>
-                        <a href="{{ route('admin.academies') }}" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Registration Rules (Shown to student on Step 4)</label>
+                    <div id="editor" style="height: 200px;">{!! old('registration_rules', $academy->registration_rules ?? '') !!}</div>
+                    <input type="hidden" name="registration_rules" id="registration_rules">
+                    <div class="form-text">Format your registration rules with fonts, colors, and styling. These will be shown to users when they select this academy.</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-orange" onclick="saveQuillContent()">{{ isset($academy) ? 'Update' : 'Create' }}
+                        Academy</button>
+                    <a href="{{ route('admin.academies') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
             </form>
         </div>
     </div>
+
+    <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Enter registration rules, conditions, or instructions...'
+        });
+
+        function saveQuillContent() {
+            document.getElementById('registration_rules').value = quill.root.innerHTML;
+        }
+
+        // Auto-save on form submit
+        document.querySelector('form').addEventListener('submit', saveQuillContent);
+    </script>
 @endsection

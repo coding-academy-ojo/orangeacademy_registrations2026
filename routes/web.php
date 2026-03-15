@@ -162,5 +162,7 @@ Route::middleware(['auth:admin', AdminMiddleware::class])->prefix('admin')->grou
         Route::get('/interviews', [Admin\InterviewController::class, 'index'])->name('admin.interviews.index');
         Route::post('/interviews/academy/{academy}/criteria', [Admin\InterviewController::class, 'manageCriteria'])->name('admin.interviews.criteria');
         Route::post('/interviews/evaluate/{enrollment}', [Admin\InterviewController::class, 'evaluate'])->name('admin.interviews.evaluate');
+        Route::post('/interviews/evaluate-user/{user}', [Admin\InterviewController::class, 'evaluateWithoutEnrollment'])->name('admin.interviews.evaluate-user');
+        Route::get('/interviews/export', [Admin\InterviewController::class, 'exportAccepted'])->name('admin.interviews.export');
     });
 });
