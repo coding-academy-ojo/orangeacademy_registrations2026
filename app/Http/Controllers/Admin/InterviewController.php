@@ -17,19 +17,15 @@ class InterviewController extends Controller
     public function index(Request $request)
     {
         $academies = Academy::all();
-        $activeTab = $request->query('academy', $academies->first()->id ?? 'all');
+        $activeTab = $request->query('academy', $academies->first()->id);
         $statusFilter = $request->query('status', 'all');
         $search = $request->query('search', '');
 
-        if ($activeTab === 'all') {
-            $criteria = collect([]);
-            $totalPoints = 0;
-        } else {
-            $criteria = InterviewCriterion::where('academy_id', $activeTab)->get();
-            $totalPoints = $criteria->sum('weight');
-        }
+        $criteria = InterviewCriterion::where('academy_id', $activeTab)->get();
+        $totalPoints = $criteria->sum('weight');
 
-        $baseQuery = User::where('role', 'student');
+        $baseQuery = User::where('role', 'student')
+            ->where('filtration_status', 'Accepted for Interview');
 
         // Search filter
         if ($search) {
@@ -43,42 +39,21 @@ class InterviewController extends Controller
             });
         }
 
-        if ($statusFilter === 'pending') {
-            if ($activeTab === 'all') {
-                $students = (clone $baseQuery)
-                    ->where('filtration_status', 'Accepted for Interview')
-                    ->whereDoesntHave('enrollments')
-                    ->with(['profile'])
-                    ->get();
-            } else {
-                $students = (clone $baseQuery)
-                    ->where('filtration_status', 'Accepted for Interview')
-                    ->whereDoesntHave('enrollments', function ($q) use ($activeTab) {
-                        $q->whereHas('cohort', function ($q2) use ($activeTab) {
-                            $q2->where('academy_id', $activeTab);
-                        });
-                    })
-                    ->with(['profile'])
-                    ->get();
-            }
-        } elseif ($statusFilter === 'enrolled') {
+        if ($statusFilter === 'enrolled') {
             $students = (clone $baseQuery)
                 ->whereHas('enrollments', function ($q) use ($activeTab) {
-                    if ($activeTab !== 'all') {
-                        $q->whereHas('cohort', function ($q2) use ($activeTab) {
-                            $q2->where('academy_id', $activeTab);
-                        });
-                    }
+                    $q->whereHas('cohort', function ($q2) use ($activeTab) {
+                        $q2->where('academy_id', $activeTab);
+                    });
                     $q->where('status', 'enrolled');
                 })
                 ->with([
                     'profile',
+                    'documents',
                     'enrollments' => function ($q) use ($activeTab) {
-                        if ($activeTab !== 'all') {
-                            $q->whereHas('cohort', function ($q2) use ($activeTab) {
-                                $q2->where('academy_id', $activeTab);
-                            });
-                        }
+                        $q->whereHas('cohort', function ($q2) use ($activeTab) {
+                            $q2->where('academy_id', $activeTab);
+                        });
                     },
                     'enrollments.cohort',
                     'enrollments.interviewEvaluation.admin'
@@ -86,73 +61,47 @@ class InterviewController extends Controller
                 ->get();
         } elseif ($statusFilter === 'rejected') {
             $students = (clone $baseQuery)
-                ->where(function ($q) use ($activeTab) {
-                    if ($activeTab === 'all') {
-                        $q->where('filtration_status', 'Rejected')
-                            ->whereDoesntHave('enrollments')
-                            ->orWhereHas('enrollments', function ($eq) {
-                                $eq->where('status', 'rejected');
-                            });
-                    } else {
-                        $q->where('filtration_status', 'Rejected')
-                            ->whereDoesntHave('enrollments', function ($eq) use ($activeTab) {
-                                $eq->whereHas('cohort', function ($q2) use ($activeTab) {
-                                    $q2->where('academy_id', $activeTab);
-                                });
-                            })
-                            ->orWhereHas('enrollments', function ($q) use ($activeTab) {
-                                $q->whereHas('cohort', function ($q2) use ($activeTab) {
-                                    $q2->where('academy_id', $activeTab);
-                                })->where('status', 'rejected');
-                            });
-                    }
+                ->whereHas('enrollments', function ($q) use ($activeTab) {
+                    $q->whereHas('cohort', function ($q2) use ($activeTab) {
+                        $q2->where('academy_id', $activeTab);
+                    });
+                    $q->where('status', 'rejected');
                 })
                 ->with([
                     'profile',
+                    'documents',
                     'enrollments' => function ($q) use ($activeTab) {
-                        if ($activeTab !== 'all') {
-                            $q->whereHas('cohort', function ($q2) use ($activeTab) {
-                                $q2->where('academy_id', $activeTab);
-                            });
-                        }
+                        $q->whereHas('cohort', function ($q2) use ($activeTab) {
+                            $q2->where('academy_id', $activeTab);
+                        });
                     },
                     'enrollments.cohort',
                     'enrollments.interviewEvaluation.admin'
                 ])
                 ->get();
         } else {
-            if ($activeTab === 'all') {
-                $students = (clone $baseQuery)
-                    ->where('filtration_status', 'Accepted for Interview')
-                    ->with([
-                        'profile',
-                        'enrollments.cohort',
-                        'enrollments.interviewEvaluation.admin'
-                    ])
-                    ->get();
-            } else {
-                $students = (clone $baseQuery)
-                    ->where(function ($q) use ($activeTab) {
-                        $q->where('filtration_status', 'Accepted for Interview')
-                            ->whereDoesntHave('enrollments')
-                            ->orWhereHas('enrollments', function ($eq) use ($activeTab) {
-                                $eq->whereHas('cohort', function ($q2) use ($activeTab) {
-                                    $q2->where('academy_id', $activeTab);
-                                });
-                            });
-                    })
-                    ->with([
-                        'profile',
-                        'enrollments' => function ($q) use ($activeTab) {
-                            $q->whereHas('cohort', function ($q2) use ($activeTab) {
+            // Default: Show all accepted for interview (with or without enrollment)
+            $students = (clone $baseQuery)
+                ->where(function ($q) use ($activeTab) {
+                    $q->whereDoesntHave('enrollments')
+                        ->orWhereHas('enrollments', function ($eq) use ($activeTab) {
+                            $eq->whereHas('cohort', function ($q2) use ($activeTab) {
                                 $q2->where('academy_id', $activeTab);
                             });
-                        },
-                        'enrollments.cohort',
-                        'enrollments.interviewEvaluation.admin'
-                    ])
-                    ->get();
-            }
+                        });
+                })
+                ->with([
+                    'profile',
+                    'documents',
+                    'enrollments' => function ($q) use ($activeTab) {
+                        $q->whereHas('cohort', function ($q2) use ($activeTab) {
+                            $q2->where('academy_id', $activeTab);
+                        });
+                    },
+                    'enrollments.cohort',
+                    'enrollments.interviewEvaluation.admin'
+                ])
+                ->get();
         }
 
         return view('admin.interviews.index', compact('academies', 'activeTab', 'statusFilter', 'students', 'criteria', 'totalPoints'));

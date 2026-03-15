@@ -87,6 +87,7 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
+                            <th>Photo</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -97,7 +98,23 @@
                     </thead>
                     <tbody>
                         @forelse($users as $u)
+                            @php
+                                $personalPhoto = $u->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                            @endphp
                             <tr>
+                                <td>
+                                    @if($personalPhoto && $personalPhoto->file_path)
+                                        <img src="{{ asset('storage/' . $personalPhoto->file_path) }}" 
+                                             alt="Photo" 
+                                             class="rounded-circle"
+                                             style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #ff7900;">
+                                    @else
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-light text-orange fw-bold"
+                                             style="width: 40px; height: 40px; border: 2px solid #ff7900;">
+                                            {{ strtoupper(substr($u->profile->first_name_en ?? 'U', 0, 1)) }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="fw-semibold">{{ $u->profile->first_name_en ?? '-' }}
                                     {{ $u->profile->last_name_en ?? '' }}
                                 </td>

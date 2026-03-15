@@ -301,6 +301,209 @@
             margin-top: 4px;
         }
 
+        /* =================== RESPONSIVE STYLES =================== */
+        @media (max-width: 992px) {
+            .hero-section {
+                padding: 100px 0 60px !important;
+                min-height: auto !important;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem !important;
+                text-align: center;
+            }
+            
+            .hero-desc {
+                text-align: center;
+                font-size: 1rem !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            .hero-badge {
+                display: flex !important;
+                justify-content: center;
+            }
+            
+            .hero-ctas {
+                justify-content: center;
+            }
+            
+            .hero-stats {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1.5rem !important;
+            }
+            
+            .hero-stat {
+                min-width: 80px;
+            }
+            
+            .code-preview {
+                margin-top: 1rem;
+            }
+            
+            .code-title {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem !important;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.4rem !important;
+            }
+            
+            .hero-stat-label {
+                font-size: 0.7rem !important;
+            }
+            
+            .hero-stats {
+                gap: 1rem !important;
+            }
+            
+            .btn-hero-primary, .btn-hero-secondary {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            .code-body {
+                padding: 16px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .code-line {
+                font-size: 0.7rem !important;
+            }
+            
+            .nav-logo-mark {
+                width: 36px !important;
+                height: 36px !important;
+            }
+            
+            .nav-brand {
+                font-size: 1rem !important;
+            }
+            
+            .programs-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            
+            .program-card {
+                padding: 1.5rem !important;
+            }
+            
+            .program-icon {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 1.5rem !important;
+            }
+            
+            .section-title {
+                font-size: 1.75rem !important;
+            }
+            
+            .section-desc {
+                font-size: 0.95rem !important;
+            }
+            
+            .video-container iframe {
+                height: 250px !important;
+            }
+            
+            .map-cards {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .academy-card {
+                padding: 1.25rem !important;
+            }
+            
+            .academy-card-title {
+                font-size: 1.1rem !important;
+            }
+            
+            .cta-title {
+                font-size: 1.75rem !important;
+            }
+            
+            .footer-links {
+                text-align: center !important;
+            }
+            
+            .footer-bottom {
+                text-align: center !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.75rem !important;
+            }
+            
+            .hero-badge {
+                font-size: 0.7rem !important;
+                padding: 6px 12px !important;
+            }
+            
+            .hero-stat {
+                min-width: 60px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.2rem !important;
+            }
+            
+            .code-body {
+                padding: 12px 8px !important;
+                overflow-x: auto;
+            }
+            
+            .code-line {
+                font-size: 0.65rem !important;
+                white-space: nowrap;
+            }
+            
+            .code-num {
+                width: 20px !important;
+                min-width: 20px !important;
+            }
+            
+            .btn-hero-primary, .btn-hero-secondary {
+                padding: 12px 24px !important;
+                font-size: 0.9rem !important;
+            }
+            
+            .hero-ctas {
+                gap: 10px !important;
+            }
+            
+            .navbar-collapse {
+                background: rgba(10, 10, 15, 0.98);
+                padding: 1rem;
+                border-radius: 12px;
+                margin-top: 0.5rem;
+            }
+            
+            .nav-actions {
+                gap: 8px !important;
+            }
+            
+            .lang-toggle {
+                padding: 3px !important;
+            }
+            
+            .lang-btn {
+                padding: 4px 10px !important;
+                font-size: 0.7rem !important;
+            }
+        }
+
         /* =================== CODE PREVIEW =================== */
         .code-preview {
             background: #141419;
@@ -1019,7 +1222,13 @@
                     </div>
                     <span class="nav-brand" data-en="Orange Academy" data-ar="أكاديمية أورنج">Orange Academy</span>
                 </a>
-                <div class="nav-actions">
+                
+                {{-- Mobile Menu Toggle --}}
+                <button class="navbar-toggler d-lg-none" type="button" onclick="toggleMobileMenu()">
+                    <i class="bi bi-list text-white" style="font-size: 1.5rem;"></i>
+                </button>
+                
+                <div class="nav-actions d-none d-lg-flex">
                     <div class="lang-toggle">
                         <button class="lang-btn active" id="btnEn" onclick="setLang('en')">EN</button>
                         <div style="width:1px;height:16px;background:rgba(255,255,255,0.2);margin:0 4px;"></div>
@@ -1036,8 +1245,51 @@
                     @endauth
                 </div>
             </div>
+            
+            {{-- Mobile Menu --}}
+            <div class="mobile-menu d-lg-none" id="mobileMenu">
+                <div class="nav-actions" style="flex-direction: column; gap: 12px; padding: 1rem 0;">
+                    <div class="lang-toggle" style="justify-content: center;">
+                        <button class="lang-btn active" id="btnEnMobile" onclick="setLang('en')">EN</button>
+                        <div style="width:1px;height:16px;background:rgba(255,255,255,0.2);margin:0 4px;"></div>
+                        <button class="lang-btn" id="btnArMobile" onclick="setLang('ar')">AR</button>
+                    </div>
+                    @auth
+                        <a href="{{ route('student.dashboard') }}" class="btn-hero-secondary w-100 text-center"><i class="bi bi-grid-1x2"></i>
+                            <span data-en="Dashboard" data-ar="لوحة التحكم">Dashboard</span></a>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-hero-secondary w-100 text-center"><span data-en="Sign In"
+                                data-ar="تسجيل الدخول">Sign In</span></a>
+                        <a href="{{ route('register') }}" class="btn-hero-primary w-100 text-center"><i class="bi bi-rocket-takeoff"></i> <span
+                                data-en="Apply Now" data-ar="سجّل الآن">Apply Now</span></a>
+                    @endauth
+                </div>
+            </div>
         </div>
     </nav>
+    
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('show');
+        }
+    </script>
+    
+    <style>
+        .mobile-menu {
+            display: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 1rem;
+        }
+        .mobile-menu.show {
+            display: block;
+        }
+        .navbar-toggler {
+            background: transparent;
+            border: none;
+            padding: 8px;
+        }
+    </style>
 
     {{-- ==================== HERO ==================== --}}
     <section class="hero-section">
@@ -1536,8 +1788,10 @@
 
         // Language - Default to English, only change if explicitly set
         function setLang(lang) {
+            // Update all language buttons (desktop and mobile)
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn' + lang.charAt(0).toUpperCase() + lang.slice(1)).classList.add('active');
+            document.getElementById('btn' + lang.charAt(0).toUpperCase() + lang.slice(1))?.classList.add('active');
+            document.getElementById('btn' + lang.charAt(0).toUpperCase() + lang.slice(1) + 'Mobile')?.classList.add('active');
             document.body.classList.remove('lang-en', 'lang-ar');
             document.body.classList.add('lang-' + lang);
             localStorage.setItem('lang', lang);

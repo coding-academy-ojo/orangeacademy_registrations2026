@@ -83,12 +83,6 @@
 
     <!-- Academy Tabs -->
     <ul class="nav nav-pills gap-2 mb-4">
-        <li class="nav-item">
-            <a class="nav-link {{ $activeTab == 'all' ? 'active' : '' }}"
-                href="{{ route('admin.interviews.index', ['academy' => 'all', 'status' => $statusFilter]) }}">
-                <i class="bi bi-grid me-1"></i> All Academies
-            </a>
-        </li>
         @foreach($academies as $academy)
             <li class="nav-item">
                 <a class="nav-link {{ $activeTab == $academy->id ? 'active' : '' }}"
@@ -122,9 +116,6 @@
         <a href="{{ route('admin.interviews.index', ['academy' => $activeTab, 'status' => 'all']) }}"
             class="btn btn-sm {{ $statusFilter == 'all' ? 'btn-dark' : 'btn-outline-dark' }} rounded-pill px-4">All
             Statuses</a>
-        <a href="{{ route('admin.interviews.index', ['academy' => $activeTab, 'status' => 'pending']) }}"
-            class="btn btn-sm {{ $statusFilter == 'pending' ? 'btn-warning text-dark' : 'btn-outline-secondary' }} rounded-pill px-4">Pending
-            Review</a>
         <a href="{{ route('admin.interviews.index', ['academy' => $activeTab, 'status' => 'enrolled']) }}"
             class="btn btn-sm {{ $statusFilter == 'enrolled' ? 'btn-success' : 'btn-outline-secondary' }} rounded-pill px-4"><i
                 class="bi bi-check-circle me-1"></i> Accepted to Join</a>
@@ -165,12 +156,22 @@
                                     $evaluation = $enrollment ? $enrollment->interviewEvaluation : null;
                                 @endphp
                                 <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center gap-3">
+                                    @php
+                                    $personalPhoto = $student->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                                @endphp
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if($personalPhoto && $personalPhoto->file_path)
+                                            <img src="{{ asset('storage/' . $personalPhoto->file_path) }}" 
+                                                 alt="Photo" 
+                                                 class="rounded-circle"
+                                                 style="width: 38px; height: 38px; object-fit: cover; border: 2px solid #ff7900;">
+                                        @else
                                             <div class="avatar-circle bg-light text-orange fw-bold d-flex align-items-center justify-content-center border"
                                                 style="width: 38px; height: 38px; border-radius: 50%;">
                                                 {{ strtoupper(substr($student->profile->first_name_en ?? 'U', 0, 1)) }}
                                             </div>
+                                        @endif
                                             <div>
                                                 <div class="fw-bold text-dark">{{ $student->profile->first_name_en ?? 'Unknown' }}
                                                     {{ $student->profile->last_name_en ?? '' }}
@@ -191,7 +192,7 @@
                                     <td>
                                         @if($enrollment && $enrollment->status == 'enrolled')
                                             <span class="badge bg-success rounded-pill px-3 py-2"><i
-                                                    class="bi bi-check-circle me-1"></i> Enrolled</span>
+                                                    class="bi bi-check-circle me-1"></i> Accepted to Join</span>
                                         @elseif($enrollment && $enrollment->status == 'rejected')
                                             <span class="badge bg-danger rounded-pill px-3 py-2"><i class="bi bi-x-circle me-1"></i>
                                                 Rejected</span>

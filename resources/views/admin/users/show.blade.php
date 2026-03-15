@@ -8,10 +8,20 @@
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-body text-center py-4">
-                    <div class="mx-auto mb-3"
-                        style="width:70px;height:70px;border-radius:50%;background:var(--orange-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:700;">
-                        {{ strtoupper(substr($user->profile->first_name_en ?? $user->email, 0, 2)) }}
-                    </div>
+                    @php
+                        $personalPhoto = $user->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                    @endphp
+                    @if($personalPhoto && $personalPhoto->file_path)
+                        <img src="{{ asset('storage/' . $personalPhoto->file_path) }}" 
+                             alt="Personal Photo" 
+                             class="rounded-circle mb-3"
+                             style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #ff7900;">
+                    @else
+                        <div class="mx-auto mb-3"
+                            style="width:120px;height:120px;border-radius:50%;background:var(--orange-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:700;">
+                            {{ strtoupper(substr($user->profile->first_name_en ?? $user->email, 0, 2)) }}
+                        </div>
+                    @endif
                     <h5 class="fw-bold mb-1">{{ trim(($user->profile->first_name_en ?? '') . ' ' . ($user->profile->second_name_en ?? '') . ' ' . ($user->profile->third_name_en ?? '') . ' ' . ($user->profile->last_name_en ?? '')) ?: 'N/A' }}</h5>
                     <div class="small fw-semibold text-secondary mb-1">{{ trim(($user->profile->first_name_ar ?? '') . ' ' . ($user->profile->second_name_ar ?? '') . ' ' . ($user->profile->third_name_ar ?? '') . ' ' . ($user->profile->last_name_ar ?? '')) }}</div>
                     <p class="text-muted small mb-2">{{ $user->email }}</p>

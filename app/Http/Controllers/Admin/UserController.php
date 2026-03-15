@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with(['profile', 'enrollments.cohort.academy', 'coursatCertificates']);
+        $query = User::with(['profile', 'enrollments.cohort.academy', 'coursatCertificates', 'documents']);
 
         if ($request->search) {
             $search = $request->search;
