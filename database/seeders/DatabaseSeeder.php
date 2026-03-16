@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         // 1.5 Create Default Document Requirements
         $docReqs = [
             ['name' => 'ID Card', 'description' => 'A valid national ID card.', 'is_required' => true],
-            ['name' => 'Personal Photo', 'description' => 'A recent passport-sized photo.', 'is_required' => true],
+            ['name' => 'Personal Image - الصوره الشخصيه', 'description' => 'A recent passport-sized photo.', 'is_required' => true],
             ['name' => 'Vaccination Certificate', 'description' => 'Proof of vaccination.', 'is_required' => false],
         ];
 

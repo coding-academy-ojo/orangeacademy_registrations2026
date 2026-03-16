@@ -99,7 +99,7 @@
                     <tbody>
                         @forelse($users as $u)
                             @php
-                                $personalPhoto = $u->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                                $personalPhoto = $u->documents->filter(fn($d) => $d->documentRequirement && (stripos($d->documentRequirement->name, 'Personal Photo') !== false || stripos($d->documentRequirement->name, 'Personal Image') !== false || stripos($d->documentRequirement->name, 'الشخصيه') !== false))->first();
                             @endphp
                             <tr>
                                 <td>

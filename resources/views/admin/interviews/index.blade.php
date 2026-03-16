@@ -157,7 +157,7 @@
                                 @endphp
                                 <tr>
                                     @php
-                                    $personalPhoto = $student->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                                    $personalPhoto = $student->documents->filter(fn($d) => $d->documentRequirement && (stripos($d->documentRequirement->name, 'Personal Photo') !== false || stripos($d->documentRequirement->name, 'Personal Image') !== false || stripos($d->documentRequirement->name, 'الشخصيه') !== false))->first();
                                 @endphp
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center gap-3">

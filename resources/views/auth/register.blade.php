@@ -217,6 +217,50 @@
             display: block;
         }
 
+        /* Phone Input Group */
+        .phone-input-group {
+            display: flex;
+            align-items: stretch;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .phone-input-group:focus-within {
+            border-color: rgba(255, 121, 0, 0.6);
+            background: rgba(255, 121, 0, 0.04);
+            box-shadow: 0 0 0 3px rgba(255, 121, 0, 0.12);
+        }
+        .phone-prefix {
+            display: flex;
+            align-items: center;
+            padding: 0 12px 0 16px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 700;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        body.lang-ar .phone-prefix {
+            padding: 0 16px 0 12px;
+            border-right: none;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            direction: ltr; /* keep prefix as +962 */
+        }
+        .phone-input-group .auth-input {
+            border: none;
+            background: transparent;
+            border-radius: 0 12px 12px 0;
+            padding-left: 12px;
+        }
+        body.lang-ar .phone-input-group .auth-input {
+            border-radius: 12px 0 0 12px;
+            padding-right: 12px;
+            padding-left: 14px;
+        }
+        .phone-input-group .input-icon {
+            display: none;
+        }
+
         /* Password strength indicator */
         .strength-bar {
             display: flex;
@@ -590,11 +634,14 @@
 
                     <div class="input-group-custom">
                         <label class="input-label" data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</label>
-                        <div class="input-wrap">
-                            <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel"
-                                class="auth-input phone @error('phone') is-invalid @enderror" placeholder="07xxxxxxxxx"
-                                required maxlength="20" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <i class="bi bi-phone input-icon"></i>
+                        <div class="phone-input-group @error('phone') is-invalid @enderror">
+                            <span class="phone-prefix">+962</span>
+                            <div class="input-wrap w-100">
+                                <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" autocomplete="tel"
+                                    class="auth-input phone @error('phone') is-invalid @enderror" placeholder="7XXXXXXXX"
+                                    required maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)"
+                                    style="padding-left: 12px;">
+                            </div>
                         </div>
                         @error('phone')<span class="invalid-feedback">{{ $message }}</span>@enderror
                     </div>

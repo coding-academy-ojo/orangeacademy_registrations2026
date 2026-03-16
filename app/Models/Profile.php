@@ -36,6 +36,12 @@ class Profile extends Model
         'expected_graduation_year',
         'gpa_type',
         'gpa_value',
+        'relative1_name',
+        'relative1_relation',
+        'relative1_phone',
+        'relative2_name',
+        'relative2_relation',
+        'relative2_phone',
     ];
     protected $casts = [
         'date_of_birth' => 'date',

@@ -50,6 +50,33 @@
                             <div class="col-md-12"><strong>GPA:</strong> {{ $user->profile->gpa_value }}
                                 ({{ ucwords(str_replace('_', ' ', $user->profile->gpa_type)) }})</div>
                         @endif
+
+                        {{-- Emergency Contacts Review --}}
+                        <div class="col-12 mt-3 pt-2 border-top">
+                            <h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="bi bi-people text-orange me-2"></i>Emergency Contacts</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded border border-light-subtle h-100">
+                                        <div class="fw-bold small text-secondary mb-1">Relative 1 (Primary)</div>
+                                        <div class="mb-1"><strong>Name:</strong> {{ $user->profile->relative1_name }}</div>
+                                        <div class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative1_relation) }}</div>
+                                        <div><strong>Phone:</strong> {{ $user->profile->relative1_phone }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded border border-light-subtle h-100">
+                                        <div class="fw-bold small text-secondary mb-1">Relative 2 (Secondary)</div>
+                                        @if($user->profile->relative2_name)
+                                            <div class="mb-1"><strong>Name:</strong> {{ $user->profile->relative2_name }}</div>
+                                            <div class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative2_relation) }}</div>
+                                            <div><strong>Phone:</strong> {{ $user->profile->relative2_phone }}</div>
+                                        @else
+                                            <div class="text-muted italic small py-2">Not provided</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @else
                     <span class="text-muted small">Not completed</span>

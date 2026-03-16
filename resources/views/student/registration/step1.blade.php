@@ -62,10 +62,16 @@
                             oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Phone Number</label>
-                        <input type="number" name="phone" id="phone" value="{{ old('phone', $profile->phone) }}" class="form-control phone"
-                            placeholder="7xxxxxxxxx" min="100000000" max="99999999999999999999"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 20)">
+                        <label class="form-label fw-semibold">Phone Number <i class="bi bi-lock-fill text-muted small ms-1"></i></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">+962</span>
+                            <input type="tel" name="phone" id="phone" 
+                                value="{{ old('phone', str_replace('+962', '', $profile->phone)) }}" 
+                                class="form-control phone bg-light"
+                                placeholder="7XXXXXXXX" readonly>
+                        </div>
+                        <div class="form-text small text-muted">Verified phone number cannot be changed.</div>
+                        @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
@@ -244,6 +250,80 @@
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">GPA</label>
                         <input type="text" name="gpa_value" id="gpa_value" value="{{ old('gpa_value', $profile->gpa_value) }}" class="form-control gpa_value" placeholder="e.g. 3.5, 85%, Excellent, A+">
+                    </div>
+                    {{-- Section: Emergency Contacts / Relatives --}}
+                    <div class="col-12 mt-4">
+                        <h5 class="section-title border-bottom pb-2 mb-3">
+                            <i class="bi bi-people-fill me-2 text-primary"></i>In Case of Emergency / Relatives
+                        </h5>
+                    </div>
+
+                    {{-- Relative 1 - Required --}}
+                    <div class="col-12">
+                        <h6 class="fw-bold mb-3 text-secondary">First Relative (Primary Contact) <span class="text-danger">*</span></h6>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Relative Name <span class="text-danger">*</span></label>
+                        <input type="text" name="relative1_name" value="{{ old('relative1_name', $profile->relative1_name) }}" 
+                            class="form-control @error('relative1_name') is-invalid @enderror" placeholder="Full Name" required>
+                        @error('relative1_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Relationship <span class="text-danger">*</span></label>
+                        <select name="relative1_relation" class="form-select @error('relative1_relation') is-invalid @enderror" required>
+                            <option value="">Select Relationship</option>
+                            <option value="father" {{ old('relative1_relation', $profile->relative1_relation) == 'father' ? 'selected' : '' }}>Father</option>
+                            <option value="mother" {{ old('relative1_relation', $profile->relative1_relation) == 'mother' ? 'selected' : '' }}>Mother</option>
+                            <option value="brother" {{ old('relative1_relation', $profile->relative1_relation) == 'brother' ? 'selected' : '' }}>Brother</option>
+                            <option value="sister" {{ old('relative1_relation', $profile->relative1_relation) == 'sister' ? 'selected' : '' }}>Sister</option>
+                            <option value="other" {{ old('relative1_relation', $profile->relative1_relation) == 'other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                        @error('relative1_relation')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">+962</span>
+                            <input type="tel" name="relative1_phone" value="{{ old('relative1_phone', str_replace('+962', '', $profile->relative1_phone)) }}" 
+                                class="form-control phone @error('relative1_phone') is-invalid @enderror"
+                                placeholder="7XXXXXXXX" required maxlength="9"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)">
+                        </div>
+                        @error('relative1_phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
+
+                    {{-- Relative 2 - Optional --}}
+                    <div class="col-12 mt-3">
+                        <h6 class="fw-bold mb-3 text-secondary">Second Relative (Optional)</h6>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Relative Name</label>
+                        <input type="text" name="relative2_name" value="{{ old('relative2_name', $profile->relative2_name) }}" 
+                            class="form-control @error('relative2_name') is-invalid @enderror" placeholder="Full Name">
+                        @error('relative2_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Relationship</label>
+                        <select name="relative2_relation" class="form-select @error('relative2_relation') is-invalid @enderror">
+                            <option value="">Select Relationship</option>
+                            <option value="father" {{ old('relative2_relation', $profile->relative2_relation) == 'father' ? 'selected' : '' }}>Father</option>
+                            <option value="mother" {{ old('relative2_relation', $profile->relative2_relation) == 'mother' ? 'selected' : '' }}>Mother</option>
+                            <option value="brother" {{ old('relative2_relation', $profile->relative2_relation) == 'brother' ? 'selected' : '' }}>Brother</option>
+                            <option value="sister" {{ old('relative2_relation', $profile->relative2_relation) == 'sister' ? 'selected' : '' }}>Sister</option>
+                            <option value="other" {{ old('relative2_relation', $profile->relative2_relation) == 'other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                        @error('relative2_relation')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">+962</span>
+                            <input type="tel" name="relative2_phone" value="{{ old('relative2_phone', str_replace('+962', '', $profile->relative2_phone)) }}" 
+                                class="form-control phone @error('relative2_phone') is-invalid @enderror"
+                                placeholder="7XXXXXXXX" maxlength="9"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)">
+                        </div>
+                        @error('relative2_phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-4 pt-3 border-top">

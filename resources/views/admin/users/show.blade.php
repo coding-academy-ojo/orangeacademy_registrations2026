@@ -9,7 +9,7 @@
             <div class="card">
                 <div class="card-body text-center py-4">
                     @php
-                        $personalPhoto = $user->documents->filter(fn($d) => $d->documentRequirement && stripos($d->documentRequirement->name, 'Personal Photo') !== false)->first();
+                        $personalPhoto = $user->documents->filter(fn($d) => $d->documentRequirement && (stripos($d->documentRequirement->name, 'Personal Photo') !== false || stripos($d->documentRequirement->name, 'Personal Image') !== false || stripos($d->documentRequirement->name, 'الشخصيه') !== false))->first();
                     @endphp
                     @if($personalPhoto && $personalPhoto->file_path)
                         <img src="{{ asset('storage/' . $personalPhoto->file_path) }}" 
@@ -67,6 +67,29 @@
                         @endif
 
                         <p class="mb-0 mt-3 pt-2 border-top"><strong>Joined:</strong> {{ $user->created_at->format('M d, Y') }}</p>
+                    </div>
+
+                    <hr>
+                    <div class="text-start small">
+                        <h6 class="fw-bold text-orange mb-3"><i class="bi bi-people-fill me-2"></i>Emergency Contacts</h6>
+                        
+                        <div class="mb-3 p-2 bg-light rounded border border-light-subtle">
+                            <h6 class="fw-bold mb-1" style="font-size: 0.8rem;">Relative 1 (Primary)</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ $user->profile->relative1_name ?? 'N/A' }}</p>
+                            <p class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative1_relation ?? 'N/A') }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative1_phone ?? 'N/A' }}</p>
+                        </div>
+
+                        @if($user->profile->relative2_name)
+                        <div class="p-2 bg-light rounded border border-light-subtle">
+                            <h6 class="fw-bold mb-1" style="font-size: 0.8rem;">Relative 2 (Secondary)</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ $user->profile->relative2_name ?? 'N/A' }}</p>
+                            <p class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative2_relation ?? 'N/A') }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative2_phone ?? 'N/A' }}</p>
+                        </div>
+                        @else
+                            <p class="text-muted italic small">No secondary relative provided.</p>
+                        @endif
                     </div>
                 </div>
             </div>

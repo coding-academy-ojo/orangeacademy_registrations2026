@@ -404,6 +404,27 @@ class DashboardController extends Controller
 
         $todayActivityCount = Activity::whereDate('created_at', today())->count();
 
+        // Phone company stats
+        $phoneStats = [
+            'orange' => \App\Models\Profile::where('phone', 'like', '077%')->count(),
+            'zain' => \App\Models\Profile::where('phone', 'like', '079%')->count(),
+            'umniah' => \App\Models\Profile::where('phone', 'like', '078%')->count(),
+        ];
+
+        // Phone stats per academy
+        $academyPhoneStats = [];
+        foreach ($academies as $academy) {
+            $userIds = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
+                $q->where('academy_id', $academy->id);
+            })->pluck('user_id')->unique();
+
+            $academyPhoneStats[$academy->name] = [
+                'orange' => \App\Models\Profile::whereIn('user_id', $userIds)->where('phone', 'like', '077%')->count(),
+                'zain' => \App\Models\Profile::whereIn('user_id', $userIds)->where('phone', 'like', '079%')->count(),
+                'umniah' => \App\Models\Profile::whereIn('user_id', $userIds)->where('phone', 'like', '078%')->count(),
+            ];
+        }
+
         // Progress stats
         $progressCounts = ['not_started' => 0, 'in_progress' => 0, 'completed' => 0];
         $requiredDocCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
@@ -437,6 +458,6 @@ class DashboardController extends Controller
                 $progressCounts['in_progress']++;
         }
 
-        return view('admin.dashboard', array_merge($stats, compact('genderStats', 'enrollmentStats', 'academyStats', 'normalizedCityDemographics', 'academyDetailedStats', 'academyMapData', 'recentActivities', 'activityTypeCounts', 'todayActivityCount', 'progressCounts', 'educationStats', 'countryStats', 'cityStats', 'fieldOfStudyStats', 'universityStats', 'missingDataStats', 'ageStats', 'graduatedStats', 'totalGraduated', 'totalAge1835')));
+        return view('admin.dashboard', array_merge($stats, compact('genderStats', 'enrollmentStats', 'academyStats', 'normalizedCityDemographics', 'academyDetailedStats', 'academyMapData', 'recentActivities', 'activityTypeCounts', 'todayActivityCount', 'progressCounts', 'educationStats', 'countryStats', 'cityStats', 'fieldOfStudyStats', 'universityStats', 'missingDataStats', 'ageStats', 'graduatedStats', 'totalGraduated', 'totalAge1835', 'phoneStats', 'academyPhoneStats')));
     }
 }

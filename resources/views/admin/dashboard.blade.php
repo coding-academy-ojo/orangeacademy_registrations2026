@@ -726,11 +726,40 @@
                                 <div class="progress-bar bg-success" style="width:{{ $acceptedRatio }}%;border-radius:10px;"></div>
                             </div>
                         </div>
+
+                        {{-- Phone Company Stats --}}
+                        @php
+                            $phoneData = $academyPhoneStats[$name] ?? ['orange' => 0, 'zain' => 0, 'umniah' => 0];
+                            $totalPhone = $phoneData['orange'] + $phoneData['zain'] + $phoneData['umniah'];
+                        @endphp
+                        @if($totalPhone > 0)
+                        <div class="mt-2 pt-2 border-top">
+                            <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
+                                <i class="bi bi-phone me-1" style="color:#ff7900;"></i>
+                                <span data-en="Phone Company" data-ar="شركة الهاتف">Phone Company</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <div class="flex-fill text-center py-1 rounded" style="background:#fff3e0;font-size:0.7rem;">
+                                    <span class="fw-bold d-block" style="color:#ff7900;">{{ $phoneData['orange'] }}</span>
+                                    <span class="text-muted">077</span>
+                                </div>
+                                <div class="flex-fill text-center py-1 rounded" style="background:#e0f7f5;font-size:0.7rem;">
+                                    <span class="fw-bold d-block" style="color:#20c997;">{{ $phoneData['zain'] }}</span>
+                                    <span class="text-muted">079</span>
+                                </div>
+                                <div class="flex-fill text-center py-1 rounded" style="background:#f3e8ff;font-size:0.7rem;">
+                                    <span class="fw-bold d-block" style="color:#7c3aed;">{{ $phoneData['umniah'] }}</span>
+                                    <span class="text-muted">078</span>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
         @endforeach
     </div>
+
 
 
     {{-- ═══════════════════════════════════════════════════════ --}}
@@ -770,6 +799,17 @@
                 </div>
                 <div class="card-body d-flex justify-content-center">
                     <div style="height: 230px; width: 100%;"><canvas id="academyChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card chart-card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold mb-0 small" data-en="Phone Company" data-ar="شركة الهاتف"><i
+                            class="bi bi-phone me-2 text-muted"></i>Phone Company</h6>
+                </div>
+                <div class="card-body d-flex justify-content-center">
+                    <div style="height: 230px; width: 100%;"><canvas id="phoneChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -1384,6 +1424,13 @@
                 Object.keys(academyData),
                 Object.values(academyData),
                 ['#ff7900', '#50be87', '#4bb4e6', '#ab8ce4', '#ff4d4d']
+            );
+
+            const phoneData = @json($phoneStats);
+            createChart('phoneChart', 'doughnut',
+                ['Orange (077)', 'Zain (079)', 'Umniah (078)'],
+                [phoneData.orange || 0, phoneData.zain || 0, phoneData.umniah || 0],
+                ['#ff7900', '#20c997', '#7c3aed']
             );
 
             // Demographics Overview Charts

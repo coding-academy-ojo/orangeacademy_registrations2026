@@ -52,9 +52,14 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        // Normalize phone number before validation
+        $request->merge([
+            'phone' => \App\Helpers\PhoneHelper::normalize($request->phone)
+        ]);
+
         $request->validate([
             'email' => 'required|email|unique:users',
-            'phone' => 'required|string|min:10|max:20|regex:/^[0-9]+$/',
+            'phone' => 'required|string|regex:/^\+9627[789][0-9]{7}$/|unique:profiles,phone',
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()->min(8)->letters()->numbers()->symbols()],
             'terms' => 'required|accepted',
         ], [
@@ -62,9 +67,8 @@ class AuthController extends Controller
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
             'phone.required' => 'Phone number is required.',
-            'phone.min' => 'Phone number must be at least 10 digits.',
-            'phone.max' => 'Phone number cannot exceed 20 digits.',
-            'phone.regex' => 'Please enter a valid phone number (numbers only).',
+            'phone.regex' => 'Please enter a valid Jordanian phone number (9 digits starting with 77, 78, or 79).',
+            'phone.unique' => 'This phone number is already registered.',
             'password.required' => 'Password is required.',
             'password.confirmed' => 'Passwords do not match.',
             'password.min' => 'Password must be at least 8 characters.',

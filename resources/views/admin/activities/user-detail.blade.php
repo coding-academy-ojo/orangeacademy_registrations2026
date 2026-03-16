@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0">User Information</h5>
                     </div>
@@ -66,6 +66,27 @@
                         <p><strong>Registered:</strong> {{ $user->created_at->format('Y-m-d H:i') }}</p>
                         <p><strong>Email Verified:</strong>
                             {{ $user->email_verified_at ? $user->email_verified_at->format('Y-m-d H:i') : 'No' }}</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Emergency Contacts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-1">Relative 1 (Primary)</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ $user->profile->relative1_name ?? '-' }}</p>
+                            <p class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative1_relation ?? '-') }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative1_phone ?? '-' }}</p>
+                        </div>
+                        <hr class="my-2">
+                        <div>
+                            <h6 class="fw-bold text-secondary mb-1">Relative 2 (Secondary)</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ $user->profile->relative2_name ?? '-' }}</p>
+                            <p class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative2_relation ?? '-') }}</p>
+                            <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative2_phone ?? '-' }}</p>
+                        </div>
                     </div>
                 </div>
             </div>

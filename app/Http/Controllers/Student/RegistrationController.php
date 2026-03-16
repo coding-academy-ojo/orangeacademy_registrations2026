@@ -15,7 +15,16 @@ class RegistrationController extends Controller
         // Find rejected documents
         $rejectedDocuments = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->get();
 
-        return view('student.dashboard', compact('user', 'rejectedDocuments'));
+        // Dynamic counts for dashboard statistics
+        $totalRequiredDocuments = \App\Models\DocumentRequirement::count();
+        $totalPublishedAssessments = Assessment::where('is_published', true)->count();
+
+        return view('student.dashboard', compact(
+            'user', 
+            'rejectedDocuments', 
+            'totalRequiredDocuments', 
+            'totalPublishedAssessments'
+        ));
     }
 
     public function step($step)
@@ -162,6 +171,13 @@ class RegistrationController extends Controller
 
     public function saveProfile(Request $request)
     {
+        // Normalize phone number before validation
+        $request->merge([
+            'phone' => \App\Helpers\PhoneHelper::normalize($request->phone),
+            'relative1_phone' => \App\Helpers\PhoneHelper::normalize($request->relative1_phone),
+            'relative2_phone' => \App\Helpers\PhoneHelper::normalize($request->relative2_phone),
+        ]);
+
         $request->validate([
             'first_name_en' => 'required|string|max:100|regex:/^[a-zA-Z\s\-]+$/',
             'second_name_en' => 'nullable|string|max:100|regex:/^[a-zA-Z\s\-]+$/',
@@ -171,8 +187,8 @@ class RegistrationController extends Controller
             'second_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
             'third_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
             'last_name_ar' => 'nullable|string|max:100|regex:/^[\p{Arabic}\s\-]+$/u',
-            'phone' => 'nullable|string|min:10|max:20|regex:/^[0-9]+$/',
-            'id_number' => 'required|numeric|digits:10',
+            'phone' => 'required|string|regex:/^\+9627[789][0-9]{7}$/|unique:profiles,phone,' . auth()->user()->profile->id,
+            'id_number' => 'required|numeric|digits:10|unique:profiles,id_number,' . auth()->user()->profile->id,
             'gender' => 'required|in:male,female',
             'date_of_birth' => 'required|date|before_or_equal:-15 years|after_or_equal:-100 years',
             'nationality' => 'required|string|max:50',
@@ -189,6 +205,12 @@ class RegistrationController extends Controller
             'expected_graduation_year' => 'nullable|string|max:4',
             'gpa_type' => 'nullable|in:percentage,gpa_4,grade',
             'gpa_value' => 'nullable|string|max:20',
+            'relative1_name' => 'required|string|max:100',
+            'relative1_relation' => 'required|in:father,mother,brother,sister,other',
+            'relative1_phone' => 'required|string|regex:/^\+9627[789][0-9]{7}$/',
+            'relative2_name' => 'nullable|string|max:100',
+            'relative2_relation' => 'nullable|in:father,mother,brother,sister,other',
+            'relative2_phone' => 'nullable|string|regex:/^\+9627[789][0-9]{7}$/',
         ], [
             'first_name_en.required' => 'First name (English) is required.',
             'first_name_en.regex' => 'First name (English) can only contain letters, spaces, and hyphens.',
@@ -200,12 +222,17 @@ class RegistrationController extends Controller
             'second_name_ar.regex' => 'Second name (Arabic) can only contain Arabic letters.',
             'third_name_ar.regex' => 'Third name (Arabic) can only contain Arabic letters.',
             'last_name_ar.regex' => 'Family name (Arabic) can only contain Arabic letters.',
-            'phone.min' => 'Phone number must be at least 10 digits.',
-            'phone.max' => 'Phone number cannot exceed 20 digits.',
-            'phone.regex' => 'Please enter a valid phone number (numbers only).',
+            'phone.required' => 'Phone number is required.',
+            'phone.regex' => 'Please enter a valid Jordanian phone number (9 digits starting with 77, 78, or 79).',
+            'phone.unique' => 'This phone number is already registered.',
+            'relative1_name.required' => 'Emergency contact (1) name is required.',
+            'relative1_relation.required' => 'Emergency contact (1) relationship is required.',
+            'relative1_phone.required' => 'Emergency contact (1) phone is required.',
+            'relative1_phone.regex' => 'Please enter a valid Jordanian phone number for emergency contact (1).',
             'id_number.required' => 'ID number is required.',
             'id_number.numeric' => 'ID number must contain only numbers.',
             'id_number.digits' => 'ID number must be exactly 10 digits.',
+            'id_number.unique' => 'This ID number is already registered.',
             'gender.required' => 'Gender is required.',
             'date_of_birth.required' => 'Date of birth is required.',
             'date_of_birth.before_or_equal' => 'You must be at least 15 years old.',
@@ -244,6 +271,12 @@ class RegistrationController extends Controller
             'expected_graduation_year',
             'gpa_type',
             'gpa_value',
+            'relative1_name',
+            'relative1_relation',
+            'relative1_phone',
+            'relative2_name',
+            'relative2_relation',
+            'relative2_phone',
         ]));
 
         Activity::log([
