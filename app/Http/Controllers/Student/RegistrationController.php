@@ -10,13 +10,18 @@ class RegistrationController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user()->load(['profile', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'documents.documentRequirement']);
+        $user = auth()->user();
+        $user->load(['profile', 'enrollments.cohort.academy', 'assessmentSubmissions.assessment', 'documents.documentRequirement']);
+        $user->loadCount([
+            'documents as rejected_docs_count' => fn($q) => $q->where('is_verified', false)->whereNotNull('rejection_reason'),
+            'documents as uploaded_required_docs_count' => fn($q) => $q->whereHas('documentRequirement', fn($dq) => $dq->where('is_required', true)),
+        ]);
 
         // Find rejected documents
         $rejectedDocuments = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->get();
 
         // Dynamic counts for dashboard statistics
-        $totalRequiredDocuments = \App\Models\DocumentRequirement::count();
+        $totalRequiredDocuments = \App\Models\DocumentRequirement::where('is_required', true)->count();
         $totalPublishedAssessments = Assessment::where('is_published', true)->count();
 
         return view('student.dashboard', compact(
@@ -32,29 +37,32 @@ class RegistrationController extends Controller
         $user = auth()->user();
         $targetStep = (int) $step;
 
-        // Check if email is verified before allowing access to any registration step
+        // Check if email is verified
         if (!$user->email_verified_at) {
-            return redirect('/student/verify-email')
-                ->with('error', 'Please verify your email address first.');
+            return redirect('/student/verify-email')->with('error', 'Please verify your email address first.');
         }
 
-        // Check if phone is verified before allowing access
+        // Check if phone is verified
         if ($user->profile && !$user->profile->phone_verified) {
-            return redirect('/student/verify-phone')
-                ->with('error', 'Please verify your phone number first.');
+            return redirect('/student/verify-phone')->with('error', 'Please verify your phone number first.');
         }
 
-        // --- Strict Progression Validation ---
+        // Eager load counts for progression logic
+        $user->loadCount([
+            'documents as uploaded_required_docs_count' => fn($q) => $q->whereHas('documentRequirement', fn($dq) => $dq->where('is_required', true)),
+            'documents as rejected_docs_count' => fn($q) => $q->where('is_verified', false)->whereNotNull('rejection_reason'),
+            'enrollments',
+            'assessmentSubmissions as completed_assessments_count' => fn($q) => $q->whereIn('status', ['submitted', 'graded']),
+            'answers',
+            'coursatCertificates as coursat_count'
+        ]);
+
         $completedSteps = $this->getCompletedSteps($user);
 
-        // If trying to access a step > 1, ensure the PREVIOUS step is completed.
-        // For example, to access step 3, step 2 must be in the $completedSteps array.
         if ($targetStep > 1) {
             $requiredPreviousStep = $targetStep - 1;
             if (!in_array($requiredPreviousStep, $completedSteps)) {
-                // Find the highest step they CAN access (which is max completed + 1)
-                $maxAllowed = max($completedSteps) + 1;
-                // Cap it at the actual max step (7)
+                $maxAllowed = count($completedSteps) > 0 ? max($completedSteps) + 1 : 1;
                 $redirectStep = min($maxAllowed, 7);
 
                 return redirect()->route('student.step', $redirectStep)
@@ -73,7 +81,6 @@ class RegistrationController extends Controller
                 $data['requirements'] = \App\Models\DocumentRequirement::all();
                 break;
             case 3:
-                // Orange Coursat Step
                 $data['certificates'] = $user->coursatCertificates->keyBy('course_name');
                 break;
             case 4:
@@ -81,7 +88,6 @@ class RegistrationController extends Controller
                 $data['enrollment'] = $user->enrollments()->first();
                 break;
             case 5:
-                // Assessments — show published assessments
                 $data['assessments'] = Assessment::where('is_published', true)->withCount('questions')->get();
                 $data['submissions'] = $user->assessmentSubmissions->keyBy('assessment_id');
                 break;
@@ -97,13 +103,9 @@ class RegistrationController extends Controller
         return view('student.registration.step' . $targetStep, $data);
     }
 
-    /**
-     * Helper method to determine which steps the user has fully completed.
-     * Returns an array of completed step numbers, e.g., [1, 2, 3]
-     */
     private function getCompletedSteps($user): array
     {
-        $completed = [0]; // 0 is always "completed", so they can reach step 1.
+        $completed = [0];
 
         // Step 1: Profile
         if ($user->profile && $user->profile->first_name_en) {
@@ -113,13 +115,11 @@ class RegistrationController extends Controller
         }
 
         // Step 2: Documents
-        $requirements = \App\Models\DocumentRequirement::where('is_required', true)->pluck('id');
-        $uploadedDocs = $user->documents()->whereIn('document_requirement_id', $requirements)->pluck('document_requirement_id')->toArray();
-        $hasAllRequiredDocs = count(array_intersect($requirements->toArray(), $uploadedDocs)) === $requirements->count();
+        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
+        $uploadedRequiredCount = $user->uploaded_required_docs_count ?? $user->documents()->whereHas('documentRequirement', fn($q) => $q->where('is_required', true))->count();
 
-        if ($hasAllRequiredDocs) {
-            // New check: if any document (required or optional) is rejected with a reason, step 2 is NOT complete
-            $hasRejection = $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->exists();
+        if ($uploadedRequiredCount >= $requiredCount) {
+            $hasRejection = ($user->rejected_docs_count ?? $user->documents()->where('is_verified', false)->whereNotNull('rejection_reason')->count()) > 0;
             if ($hasRejection) {
                 return $completed;
             }
@@ -129,16 +129,15 @@ class RegistrationController extends Controller
         }
 
         // Step 3: Orange Coursat
-        $courses = ['html', 'css', 'javascript'];
-        $uploadedCerts = $user->coursatCertificates()->whereIn('course_name', $courses)->pluck('course_name')->toArray();
-        if (count(array_intersect($courses, $uploadedCerts)) === count($courses)) {
+        $uploadedCertsCount = $user->coursat_count ?? $user->coursatCertificates()->count();
+        if ($uploadedCertsCount >= 3) {
             $completed[] = 3;
         } else {
             return $completed;
         }
 
         // Step 4: Enrollment
-        if ($user->enrollments()->exists()) {
+        if (($user->enrollments_count ?? $user->enrollments()->count()) > 0) {
             $completed[] = 4;
         } else {
             return $completed;
@@ -146,7 +145,7 @@ class RegistrationController extends Controller
 
         // Step 5: Assessments
         $activeAssessmentsCount = Assessment::where('is_published', true)->count();
-        $completedAssessmentsCount = $user->assessmentSubmissions()->whereIn('status', ['submitted', 'graded'])->count();
+        $completedAssessmentsCount = $user->completed_assessments_count ?? $user->assessmentSubmissions()->whereIn('status', ['submitted', 'graded'])->count();
 
         if ($activeAssessmentsCount === 0 || $completedAssessmentsCount >= $activeAssessmentsCount) {
             $completed[] = 5;
@@ -160,8 +159,8 @@ class RegistrationController extends Controller
             $completed[] = 6;
         } else {
             $requiredQCount = $questionnaire->questions()->count();
-            $answersCount = current(array_filter([$user->answers()->count()])); // just converting 0 to false for logic
-            if ($user->answers()->count() >= $requiredQCount) {
+            $answersCount = $user->answers_count ?? $user->answers()->count();
+            if ($answersCount >= $requiredQCount) {
                 $completed[] = 6;
             }
         }
@@ -211,6 +210,10 @@ class RegistrationController extends Controller
             'relative2_name' => 'nullable|string|max:100',
             'relative2_relation' => 'nullable|in:father,mother,brother,sister,other',
             'relative2_phone' => 'nullable|string|regex:/^\+9627[789][0-9]{7}$/',
+            'has_accessibility_needs' => 'required|boolean',
+            'accessibility_details' => 'required_if:has_accessibility_needs,1|nullable|string|max:1000',
+            'has_illness' => 'required|boolean',
+            'illness_details' => 'required_if:has_illness,1|nullable|string|max:1000',
         ], [
             'first_name_en.required' => 'First name (English) is required.',
             'first_name_en.regex' => 'First name (English) can only contain letters, spaces, and hyphens.',
@@ -242,6 +245,8 @@ class RegistrationController extends Controller
             'city.required' => 'City is required.',
             'address.max' => 'Address cannot exceed 500 characters.',
             'education_level.in' => 'Please select a valid education level.',
+            'accessibility_details.required_if' => 'Please provide details about your accessibility needs.',
+            'illness_details.required_if' => 'Please provide details about your illness.',
         ]);
         $profile = auth()->user()->profile ?? auth()->user()->profile()->create();
         $profile->update($request->only([
@@ -277,6 +282,10 @@ class RegistrationController extends Controller
             'relative2_name',
             'relative2_relation',
             'relative2_phone',
+            'has_accessibility_needs',
+            'accessibility_details',
+            'has_illness',
+            'illness_details',
         ]));
 
         Activity::log([

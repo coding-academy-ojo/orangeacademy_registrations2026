@@ -66,7 +66,8 @@ class ProfileFactory extends Factory
             'third_name_ar' => $firstNamesAr[$tIndexAr],
             'last_name_ar' => $lastNamesAr[$lIndex],
             'phone' => $phone,
-            'phone_verified' => $this->faker->boolean(80),
+            'phone_verified' => $isPhoneVerified = $this->faker->boolean(80),
+            'phone_verified_at' => $isPhoneVerified ? now() : null,
             'gender' => $this->faker->randomElement(['male', 'female']),
             'date_of_birth' => $this->faker->dateTimeBetween('-30 years', '-18 years'),
             'nationality' => 'Jordanian',
@@ -83,6 +84,16 @@ class ProfileFactory extends Factory
             'expected_graduation_year' => $isGraduated ? null : $this->faker->numberBetween(date('Y'), date('Y') + 4),
             'gpa_type' => $this->faker->randomElement(['percentage', 'gpa_4', 'grade']),
             'gpa_value' => (string) $this->faker->randomFloat(2, 2.0, 4.0),
+            'has_accessibility_needs' => $hasA11y = $this->faker->boolean(15), // 15% chance
+            'accessibility_details' => $hasA11y ? $this->faker->sentence() : null,
+            'has_illness' => $hasIllness = $this->faker->boolean(10), // 10% chance
+            'illness_details' => $hasIllness ? $this->faker->sentence() : null,
+            'relative1_name' => $this->faker->name,
+            'relative1_relation' => $this->faker->randomElement(['Father', 'Mother', 'Brother', 'Sister']),
+            'relative1_phone' => $this->faker->numerify('079#######'),
+            'relative2_name' => $this->faker->name,
+            'relative2_relation' => $this->faker->randomElement(['Father', 'Mother', 'Brother', 'Sister']),
+            'relative2_phone' => $this->faker->numerify('078#######'),
         ];
     }
 }

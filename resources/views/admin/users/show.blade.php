@@ -88,8 +88,41 @@
                             <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative2_phone ?? 'N/A' }}</p>
                         </div>
                         @else
-                            <p class="text-muted italic small">No secondary relative provided.</p>
+                            <p class="text-muted italic small mb-0">No secondary relative provided.</p>
                         @endif
+
+                        <hr class="my-3">
+                        <h6 class="fw-bold text-danger mb-3"><i class="bi bi-heart-pulse-fill me-2"></i>Health & Accessibility</h6>
+                        
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Accessibility Needs:</strong> 
+                                @if($user->profile->has_accessibility_needs)
+                                    <span class="badge bg-danger">Yes</span>
+                                @else
+                                    <span class="badge bg-success">No</span>
+                                @endif
+                            </p>
+                            @if($user->profile->has_accessibility_needs)
+                                <div class="p-2 mt-1 bg-white border rounded small">
+                                    {{ $user->profile->accessibility_details }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <p class="mb-1"><strong>Chronic Illness:</strong> 
+                                @if($user->profile->has_illness)
+                                    <span class="badge bg-danger">Yes</span>
+                                @else
+                                    <span class="badge bg-success">No</span>
+                                @endif
+                            </p>
+                            @if($user->profile->has_illness)
+                                <div class="p-2 mt-1 bg-white border rounded small">
+                                    {{ $user->profile->illness_details }}
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

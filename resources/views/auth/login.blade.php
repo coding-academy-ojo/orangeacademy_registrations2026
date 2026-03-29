@@ -303,8 +303,6 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
             padding: 2.5rem 2rem;
             background: #0d0d14;
             position: relative;
@@ -326,13 +324,16 @@
             max-width: 420px;
             position: relative;
             z-index: 2;
+            padding: 1.5rem;
+            margin: 0 auto;
         }
 
         .form-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-top: 0.5rem;
         }
 
         .form-brand {
@@ -362,6 +363,20 @@
             font-size: 1rem;
             font-weight: 700;
             color: white;
+        }
+
+        .form-heading {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-subheading {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
         }
 
         .lang-toggle {
@@ -408,15 +423,15 @@
         /* Inputs */
         .input-group-custom {
             position: relative;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
         }
 
         .input-label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
@@ -434,6 +449,7 @@
             font-size: 1rem;
             transition: color 0.2s;
             pointer-events: none;
+            z-index: 3;
         }
 
         body.lang-ar .input-icon {
@@ -443,18 +459,18 @@
 
         .auth-input {
             width: 100%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 14px 14px 14px 42px;
-            color: white;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px 16px 14px 42px;
+            color: #fff;
             font-size: 0.95rem;
-            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            transition: all 0.3s ease;
             outline: none;
         }
 
         body.lang-ar .auth-input {
-            padding: 14px 42px 14px 14px;
+            padding: 14px 42px 14px 16px;
         }
 
         .auth-input::placeholder {
@@ -486,7 +502,7 @@
         /* Submit button */
         .btn-auth {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             background: linear-gradient(135deg, #ff6b35, #f7931e);
             border: none;
             border-radius: 12px;
@@ -497,7 +513,8 @@
             letter-spacing: 0.02em;
             box-shadow: 0 8px 24px rgba(255, 107, 53, 0.35);
             transition: all 0.3s;
-            margin-top: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -582,13 +599,13 @@
             background: rgba(255, 121, 0, 0.1);
             border: 1px solid rgba(255, 121, 0, 0.2);
             color: #ff9d42;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 999px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
 
         .floating-badge .dot-live {

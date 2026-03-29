@@ -15,8 +15,31 @@ class EnrollmentController extends Controller
             $query->where('status', $request->status);
         }
 
-        $enrollments = $query->latest()->paginate(15);
-        return view('admin.enrollments.index', compact('enrollments'));
+        if ($request->academy_id) {
+            $query->whereHas('cohort', function ($q) use ($request) {
+                $q->where('academy_id', $request->academy_id);
+            });
+        }
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user.profile', function ($pq) use ($search) {
+                    $pq->where('first_name_en', 'like', "%{$search}%")
+                      ->orWhere('last_name_en', 'like', "%{$search}%")
+                      ->orWhere('first_name_ar', 'like', "%{$search}%")
+                      ->orWhere('last_name_ar', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%"); // Added phone search
+                })->orWhereHas('user', function ($uq) use ($search) {
+                    $uq->where('email', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $enrollments = $query->latest()->paginate(25);
+        $academies = \App\Models\Academy::all();
+        
+        return view('admin.enrollments.index', compact('enrollments', 'academies'));
     }
 
     public function updateStatus(Request $request, Enrollment $enrollment)

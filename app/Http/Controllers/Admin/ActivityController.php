@@ -39,13 +39,23 @@ class ActivityController extends Controller
 
     public function userProgress(Request $request)
     {
-        $users = User::with(['profile', 'enrollments.cohort.academy', 'documents', 'coursatCertificates'])
+        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
+
+        $users = User::with(['profile', 'enrollments.cohort.academy'])
+            ->withCount([
+                'documents as required_docs_count' => function ($q) {
+                    $q->whereHas('documentRequirement', fn($dq) => $dq->where('is_required', true));
+                },
+                'enrollments',
+                'coursatCertificates as coursat_count',
+                'answers'
+            ])
             ->where('role', 'student')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        $users->getCollection()->transform(function ($user) {
-            $user->completed_steps = $this->getCompletedSteps($user);
+        $users->getCollection()->transform(function ($user) use ($requiredCount) {
+            $user->completed_steps = $this->getCompletedStepsOptimized($user, $requiredCount);
             $user->registration_progress = $this->getRegistrationProgress($user);
             return $user;
         });
@@ -55,9 +65,19 @@ class ActivityController extends Controller
 
     public function userDetail(User $user)
     {
+        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
+        
         $user->load(['profile', 'enrollments.cohort.academy', 'documents.documentRequirement', 'coursatCertificates', 'answers.question', 'assessmentSubmissions.assessment']);
+        $user->loadCount([
+            'documents as required_docs_count' => function ($q) {
+                $q->whereHas('documentRequirement', fn($dq) => $dq->where('is_required', true));
+            },
+            'enrollments',
+            'coursatCertificates as coursat_count',
+            'answers'
+        ]);
 
-        $completedSteps = $this->getCompletedSteps($user);
+        $completedSteps = $this->getCompletedStepsOptimized($user, $requiredCount);
         $registrationProgress = $this->getRegistrationProgress($user);
 
         $activities = Activity::where('user_id', $user->id)
@@ -68,7 +88,7 @@ class ActivityController extends Controller
         return view('admin.activities.user-detail', compact('user', 'completedSteps', 'registrationProgress', 'activities'));
     }
 
-    private function getCompletedSteps($user): array
+    private function getCompletedStepsOptimized($user, $requiredCount): array
     {
         $steps = [];
 
@@ -77,41 +97,30 @@ class ActivityController extends Controller
         }
 
         if ($user->profile) {
-            $profile = $user->profile;
-            if (
-                $profile->first_name_en && $profile->last_name_en && $profile->phone &&
-                $profile->gender && $profile->date_of_birth && $profile->nationality
-            ) {
+            $p = $user->profile;
+            if ($p->first_name_en && $p->last_name_en && $p->phone && $p->gender && $p->date_of_birth && $p->nationality) {
                 $steps[] = 'profile';
             }
         }
 
-        $requiredDocs = $user->documents()->whereHas('documentRequirement', function ($q) {
-            $q->where('is_required', true);
-        })->count();
-
-        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
-
-        if ($requiredDocs >= $requiredCount && $requiredCount > 0) {
-            $steps[] = 'documents';
+        // Use pre-loaded count
+        if (isset($user->required_docs_count) ? $user->required_docs_count >= $requiredCount : $user->documents()->whereHas('documentRequirement', fn($q) => $q->where('is_required', true))->count() >= $requiredCount) {
+            if ($requiredCount > 0) $steps[] = 'documents';
         }
 
-        if ($user->enrollments()->exists()) {
+        if (isset($user->enrollments_count) ? $user->enrollments_count > 0 : $user->enrollments()->exists()) {
             $steps[] = 'enrollment';
         }
 
-        $courses = ['html', 'css', 'javascript'];
-        $uploadedCerts = $user->coursatCertificates()->whereIn('course_name', $courses)->count();
-        if ($uploadedCerts >= 3) {
+        if (isset($user->coursat_count) ? $user->coursat_count >= 3 : $user->coursatCertificates()->count() >= 3) {
             $steps[] = 'coursat';
         }
 
-        $hasAnswers = $user->answers()->exists();
-        if ($hasAnswers) {
+        if (isset($user->answers_count) ? $user->answers_count > 0 : $user->answers()->exists()) {
             $steps[] = 'questionnaire';
         }
 
-        $enrollment = $user->enrollments()->first();
+        $enrollment = $user->enrollments->first() ?? ($user->relationLoaded('enrollments') ? null : $user->enrollments()->first());
         if ($enrollment && $enrollment->status === 'applied') {
             $steps[] = 'submitted';
         }
@@ -119,9 +128,16 @@ class ActivityController extends Controller
         return $steps;
     }
 
+    // Keep original for back-compat or unused routes, but mark as internal
+    private function getCompletedSteps($user): array
+    {
+        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
+        return $this->getCompletedStepsOptimized($user, $requiredCount);
+    }
+
     private function getRegistrationProgress($user): int
     {
-        $completedSteps = $this->getCompletedSteps($user);
+        $completedSteps = $user->completed_steps ?? $this->getCompletedSteps($user);
         $totalSteps = 7;
 
         return round((count($completedSteps) / $totalSteps) * 100);
@@ -129,11 +145,21 @@ class ActivityController extends Controller
 
     public function missedData()
     {
-        $users = User::with(['profile', 'documents', 'enrollments'])
+        $requiredCount = \App\Models\DocumentRequirement::where('is_required', true)->count();
+
+        $allUsers = User::with(['profile'])
+            ->withCount([
+                'documents as required_docs_count' => function ($q) {
+                    $q->whereHas('documentRequirement', fn($dq) => $dq->where('is_required', true));
+                },
+                'enrollments',
+                'coursatCertificates as coursat_count',
+                'answers'
+            ])
             ->where('role', 'student')
             ->get()
-            ->map(function ($user) {
-                $user->completed_steps = $this->getCompletedSteps($user);
+            ->map(function ($user) use ($requiredCount) {
+                $user->completed_steps = $this->getCompletedStepsOptimized($user, $requiredCount);
                 $user->registration_progress = $this->getRegistrationProgress($user);
                 return $user;
             })
@@ -142,7 +168,26 @@ class ActivityController extends Controller
             })
             ->sortByDesc('created_at');
 
-        return view('admin.activities.missed-data', compact('users'));
+        // Calculate stats before pagination
+        $stats = [
+            'not_started' => $allUsers->filter(fn($u) => $u->registration_progress < 20)->count(),
+            'in_progress' => $allUsers->filter(fn($u) => $u->registration_progress >= 20)->count(), // All here are < 100 because of the primary filter
+            'total' => $allUsers->count(),
+        ];
+
+        // Manual pagination
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
+        $perPage = 20;
+        $currentItems = $allUsers->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $users = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems, 
+            $allUsers->count(), 
+            $perPage, 
+            $currentPage, 
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
+
+        return view('admin.activities.missed-data', compact('users', 'stats'));
     }
 
     public function show(Activity $activity)

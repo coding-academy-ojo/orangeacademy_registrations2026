@@ -505,20 +505,6 @@
         <div class="col-6 col-xl-3">
             <div class="card stat-card h-100">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="stat-icon" style="background:rgba(205,60,20,0.1)">
-                        <i class="bi bi-file-earmark-x-fill" style="color:#cd3c14"></i>
-                    </div>
-                    <div>
-                        <div class="small text-muted" data-en="Unverified Docs" data-ar="وثائق غير موثّقة">Unverified Docs
-                        </div>
-                        <div class="fs-4 fw-bold">{{ $unverified_docs }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card stat-card h-100">
-                <div class="card-body d-flex align-items-center gap-3">
                     <div class="stat-icon" style="background:rgba(171,140,228,0.1)">
                         <i class="bi bi-award-fill" style="color:#ab8ce4"></i>
                     </div>
@@ -537,20 +523,144 @@
     {{-- ═══════════════════════════════════════════════════════ --}}
     <div class="section-title mb-3"><i class="bi bi-grid-3x3-gap"></i> <span data-en="Academy Analytics Breakdown"
             data-ar="تحليل الأكاديميات">Academy Analytics Breakdown</span></div>
+    
+    {{-- Cohort Filter --}}
+    <div class="row g-2 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius:12px;background:linear-gradient(135deg,#f8f9fa,#fff);">
+                <div class="card-body py-3">
+                    <form method="GET" action="{{ route('admin.dashboard') }}" class="d-flex align-items-center flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-funnel" style="color:#ff7900;font-size:1.2rem;"></i>
+                            <span class="fw-bold text-dark" data-en="Filter by Cohort:" data-ar="تصفية حسب الدفعة:">Filter by Cohort:</span>
+                        </div>
+                        <select name="cohort_id" class="form-select form-select-sm fw-bold" style="width:280px;border-color:#ff7900;" onchange="this.form.submit()">
+                            <option value="" data-en="All Cohorts (No Filter)" data-ar="جميع الدفعات (بدون تصفية)">All Cohorts (No Filter)</option>
+                            @foreach($allCohorts as $c)
+                                <option value="{{ $c->id }}" {{ $cohortId == $c->id ? 'selected' : '' }}>
+                                    {{ $c->name }} - {{ $c->academy->name ?? '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if($cohortId)
+                            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-x-lg me-1"></i> <span data-en="Clear Filter" data-ar="مسح التصفية">Clear Filter</span>
+                            </a>
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i>{{ $cohort->name }}
+                            </span>
+                        @endif
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-3 mb-4">
-        @foreach($academyDetailedStats as $name => $data)
-            @php
-                $pendingCount  = 0;
-                $acceptedCount = 0;
-                foreach ($data['cohorts'] as $c) {
-                    $pendingCount  += ($c['applied']   ?? 0);
-                    $acceptedCount += ($c['accepted']  ?? 0);
+        @php
+            $academiesToShow = $academyDetailedStats;
+            if ($cohort && $cohort->academy) {
+                $academiesToShow = [$cohort->academy->name => ($academyDetailedStats[$cohort->academy->name] ?? [])];
+            }
+        @endphp
+        
+        @php
+            $hasAcademyData = false;
+            foreach($academiesToShow as $name => $data) {
+                $totalStudents = $cohort ? ($data['cohorts'][$cohort->name]['total'] ?? 0) : ($data['total'] ?? 0);
+                if($totalStudents > 0) {
+                    $hasAcademyData = true;
+                    break;
                 }
-                $totalStudents  = $data['total'];
-                $graduatedCount = $data['graduated_count'];
-                $acceptedRatio  = $totalStudents > 0 ? round(($acceptedCount / $totalStudents) * 100) : 0;
-                $totalAge1835Academy = array_sum($data['age']);
-            @endphp
+            }
+        @endphp
+        
+        @if($hasAcademyData)
+        
+        @if($cohort)
+        {{-- Horizontal Table View when cohort is selected --}}
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;overflow:hidden;">
+            <div class="card-header py-3 px-4" style="background:linear-gradient(135deg,#ff7900,#ffaa40);">
+                <h5 class="mb-0 text-white fw-bold">
+                    <i class="bi bi-table me-2"></i>
+                    <span data-en="Cohort Analytics" data-ar="تحليلات الدفعة">Cohort Analytics</span>: {{ $cohort->name }}
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background:#f8f9fa;">
+                            <tr>
+                                <th class="ps-4 py-3" data-en="Academy" data-ar="الأكاديمية">Academy</th>
+                                <th class="text-center py-3" data-en="Total" data-ar="الإجمالي">Total</th>
+                                <th class="text-center py-3" data-en="Pending" data-ar="معلق">Pending</th>
+                                <th class="text-center py-3" data-en="Accepted" data-ar="مقبول">Accepted</th>
+                                <th class="text-center py-3" data-en="Graduated" data-ar="خريج">Graduated</th>
+                                <th class="text-center py-3" data-en="Male" data-ar="ذكر">Male</th>
+                                <th class="text-center py-3" data-en="Female" data-ar="أنثى">Female</th>
+                                <th class="text-center py-3" data-en="Age 18-35" data-ar="العمر 18-35">Age 18-35</th>
+                                <th class="text-center py-3" data-en="Orange 077" data-ar="أورانج 077">Orange 077</th>
+                                <th class="text-center py-3" data-en="Zain 079" data-ar="زين 079">Zain 079</th>
+                                <th class="text-center py-3" data-en="Umniah 078" data-ar="أمنية 078">Umniah 078</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($academiesToShow as $name => $data)
+                                @php
+                                    $cData = $data['cohorts'][$cohort->name] ?? null;
+                                    if(!$cData) continue;
+                                    $totalStudents = $cData['total'] ?? 0;
+                                    $pendingCount = $cData['applied'] ?? 0;
+                                    $acceptedCount = $cData['accepted'] ?? 0;
+                                    $graduatedCount = $data['graduated_count'] ?? 0;
+                                    $maleCount = $data['gender']['male'] ?? 0;
+                                    $femaleCount = $data['gender']['female'] ?? 0;
+                                    $age1835 = array_sum($data['age']);
+                                    $phoneData = $data['phone_stats'] ?? ['orange'=>0,'zain'=>0,'umniah'=>0];
+                                @endphp
+                                <tr>
+                                    <td class="ps-4 py-3 fw-bold">{{ $name }}</td>
+                                    <td class="text-center py-3"><span class="badge bg-primary">{{ $totalStudents }}</span></td>
+                                    <td class="text-center py-3"><span class="badge bg-warning text-dark">{{ $pendingCount }}</span></td>
+                                    <td class="text-center py-3"><span class="badge bg-success">{{ $acceptedCount }}</span></td>
+                                    <td class="text-center py-3"><span class="badge bg-info text-dark">{{ $graduatedCount }}</span></td>
+                                    <td class="text-center py-3">{{ $maleCount }}</td>
+                                    <td class="text-center py-3">{{ $femaleCount }}</td>
+                                    <td class="text-center py-3">{{ $age1835 }}</td>
+                                    <td class="text-center py-3"><span class="badge" style="background:#fff3e0;color:#ff7900;">{{ $phoneData['orange'] }}</span></td>
+                                    <td class="text-center py-3"><span class="badge" style="background:#e0f7f5;color:#20c997;">{{ $phoneData['zain'] }}</span></td>
+                                    <td class="text-center py-3"><span class="badge" style="background:#f3e8ff;color:#7c3aed;">{{ $phoneData['umniah'] }}</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @else
+        {{-- Card Grid View when no cohort filter --}}
+            @foreach($academiesToShow as $name => $data)
+                @php
+                    $pendingCount  = 0;
+                    $acceptedCount = 0;
+                    if ($cohort && isset($data['cohorts'][$cohort->name])) {
+                        $c = $data['cohorts'][$cohort->name];
+                        $pendingCount = $c['applied'] ?? 0;
+                        $acceptedCount = $c['accepted'] ?? 0;
+                    } elseif (!$cohort) {
+                        foreach ($data['cohorts'] as $c) {
+                            $pendingCount  += ($c['applied']   ?? 0);
+                            $acceptedCount += ($c['accepted']  ?? 0);
+                        }
+                    }
+                    $totalStudents  = $cohort ? ($data['cohorts'][$cohort->name]['total'] ?? 0) : $data['total'];
+                    $graduatedCount = $data['graduated_count'];
+                    $acceptedRatio  = $totalStudents > 0 ? round(($acceptedCount / $totalStudents) * 100) : 0;
+                    $totalAge1835Academy = array_sum($data['age']);
+                    
+                    // Skip if no students
+                    if($totalStudents == 0) continue;
+                @endphp
             <div class="col-xl-3 col-md-6">
                 <div class="card border-0 shadow-sm h-100" style="border-radius:14px;overflow:hidden;">
                     {{-- Academy Name Header --}}
@@ -731,7 +841,37 @@
                         @php
                             $phoneData = $academyPhoneStats[$name] ?? ['orange' => 0, 'zain' => 0, 'umniah' => 0];
                             $totalPhone = $phoneData['orange'] + $phoneData['zain'] + $phoneData['umniah'];
+                            $healthData = $data['health_stats'] ?? ['accessibility' => 0, 'illness' => 0];
                         @endphp
+
+                        {{-- Health & Accessibility Summary --}}
+                        <div class="mt-2 pt-2 border-top">
+                            <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
+                                <i class="bi bi-heart-pulse me-1" style="color:#ef4444;"></i>
+                                <span data-en="Health & Accessibility" data-ar="الصحة والاحتياجات">Health & Accessibility</span>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="rounded-3 d-flex align-items-center gap-2 p-2" style="background:rgba(16,185,129,0.06);">
+                                        <i class="bi bi-person-wheelchair" style="color:#10b981;font-size:0.9rem;"></i>
+                                        <div>
+                                            <div class="fw-bold" style="font-size:0.85rem;color:#10b981;line-height:1;">{{ $healthData['accessibility'] }}</div>
+                                            <div class="text-muted" style="font-size:0.55rem;text-transform:uppercase;" data-en="A11y Needs" data-ar="احتياجات">A11y Needs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="rounded-3 d-flex align-items-center gap-2 p-2" style="background:rgba(239,68,68,0.06);">
+                                        <i class="bi bi-capsule" style="color:#ef4444;font-size:0.9rem;"></i>
+                                        <div>
+                                            <div class="fw-bold" style="font-size:0.85rem;color:#ef4444;line-height:1;">{{ $healthData['illness'] }}</div>
+                                            <div class="text-muted" style="font-size:0.55rem;text-transform:uppercase;" data-en="Illnesses" data-ar="أمراض">Illnesses</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         @if($totalPhone > 0)
                         <div class="mt-2 pt-2 border-top">
                             <div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
@@ -759,16 +899,18 @@
             </div>
         @endforeach
     </div>
+    @endif
+    @endif
 
 
 
     {{-- ═══════════════════════════════════════════════════════ --}}
-    {{-- SECTION 2: Charts --}}
+    {{-- SECTION 2: Main Overview Charts --}}
     {{-- ═══════════════════════════════════════════════════════ --}}
-    <div class="section-title"><i class="bi bi-bar-chart-line"></i> <span data-en="Analytics"
-            data-ar="التحليلات">Analytics</span></div>
+    <div class="section-title"><i class="bi bi-bar-chart-line"></i> <span data-en="Overview Analytics"
+            data-ar="تحليلات عامة">Overview Analytics</span></div>
     <div class="row g-3 mb-4">
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
                     <h6 class="fw-bold mb-0 small" data-en="Students by Gender" data-ar="الطلاب حسب الجنس">
@@ -776,52 +918,60 @@
                     </h6>
                 </div>
                 <div class="card-body d-flex justify-content-center">
-                    <div style="height: 230px; width: 100%;"><canvas id="genderChart"></canvas></div>
+                    <div style="height: 200px; width: 100%;"><canvas id="genderChart"></canvas></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Enrollments by Status" data-ar="التسجيلات حسب الحالة"><i
-                            class="bi bi-pie-chart me-2 text-muted"></i>Enrollments by Status</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Enrollments by Status" data-ar="التسجيلات حسب الحالة">
+                        <i class="bi bi-pie-chart me-2 text-muted"></i>Enrollments by Status
+                    </h6>
                 </div>
                 <div class="card-body d-flex justify-content-center">
-                    <div style="height: 230px; width: 100%;"><canvas id="statusChart"></canvas></div>
+                    <div style="height: 200px; width: 100%;"><canvas id="statusChart"></canvas></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Students by Academy" data-ar="الطلاب حسب الأكاديمية"><i
-                            class="bi bi-building me-2 text-muted"></i>Students by Academy</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Students by Academy" data-ar="الطلاب حسب الأكاديمية">
+                        <i class="bi bi-building me-2 text-muted"></i>Students by Academy
+                    </h6>
                 </div>
                 <div class="card-body d-flex justify-content-center">
-                    <div style="height: 230px; width: 100%;"><canvas id="academyChart"></canvas></div>
+                    <div style="height: 200px; width: 100%;"><canvas id="academyChart"></canvas></div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Phone Company" data-ar="شركة الهاتف"><i
-                            class="bi bi-phone me-2 text-muted"></i>Phone Company</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Phone Company" data-ar="شركة الهاتف">
+                        <i class="bi bi-phone me-2 text-muted"></i>Phone Company
+                    </h6>
                 </div>
                 <div class="card-body d-flex justify-content-center">
-                    <div style="height: 230px; width: 100%;"><canvas id="phoneChart"></canvas></div>
+                    <div style="height: 200px; width: 100%;"><canvas id="phoneChart"></canvas></div>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    {{-- SECTION 3: Demographics Charts --}}
+    {{-- ═══════════════════════════════════════════════════════ --}}
+    <div class="section-title"><i class="bi bi-people"></i> <span data-en="Demographics"
+            data-ar="الديموغرافيا">Demographics</span></div>
     <div class="row g-3 mb-4">
-        {{-- Education Level Chart --}}
         <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Education Level" data-ar="المستوى التعليمي"><i
-                            class="bi bi-mortarboard me-2 text-muted"></i>Education Level</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Education Level" data-ar="المستوى التعليمي">
+                        <i class="bi bi-mortarboard me-2 text-muted"></i>Education Level
+                    </h6>
                 </div>
                 <div class="card-body">
                     @if(count($educationStats) > 0)
@@ -829,21 +979,19 @@
                     @else
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-pie-chart" style="font-size:2rem;opacity:0.3;"></i>
-                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No
-                                data available
-                            </p>
+                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No data available</p>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- University Chart --}}
         <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="University" data-ar="الجامعة"><i
-                            class="bi bi-bank me-2 text-muted"></i>University</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="University" data-ar="الجامعة">
+                        <i class="bi bi-bank me-2 text-muted"></i>University
+                    </h6>
                 </div>
                 <div class="card-body">
                     @if(count($universityStats) > 0)
@@ -851,21 +999,19 @@
                     @else
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-bank" style="font-size:2rem;opacity:0.3;"></i>
-                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No
-                                data available
-                            </p>
+                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No data available</p>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- Age Analysis Chart --}}
         <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Age Analysis (18-35)" data-ar="تحليل العمر (18-35)"><i
-                            class="bi bi-calendar-event me-2 text-muted"></i>Age Analysis (18-35)</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Age Analysis (18-35)" data-ar="تحليل العمر (18-35)">
+                        <i class="bi bi-calendar-event me-2 text-muted"></i>Age Analysis (18-35)
+                    </h6>
                 </div>
                 <div class="card-body">
                     @php
@@ -879,21 +1025,19 @@
                     @else
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-calendar-x" style="font-size:2rem;opacity:0.3;"></i>
-                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No
-                                data available
-                            </p>
+                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No data available</p>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- Graduated Students Chart --}}
         <div class="col-lg-3">
             <div class="card chart-card h-100">
                 <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0 small" data-en="Uni. Graduates" data-ar="خريجو الجامعة"><i
-                            class="bi bi-award me-2 text-muted"></i>Uni. Graduates</h6>
+                    <h6 class="fw-bold mb-0 small" data-en="Uni. Graduates" data-ar="خريجو الجامعة">
+                        <i class="bi bi-award me-2 text-muted"></i>Uni. Graduates
+                    </h6>
                 </div>
                 <div class="card-body">
                     @if(count($graduatedStats) > 0)
@@ -901,9 +1045,7 @@
                     @else
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-award" style="font-size:2rem;opacity:0.3;"></i>
-                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No
-                                data available
-                            </p>
+                            <p class="mt-2 small" data-en="No data available" data-ar="لا توجد بيانات متاحة">No data available</p>
                         </div>
                     @endif
                 </div>
@@ -1151,7 +1293,6 @@
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
-                                    </td>
                                     <td class="small text-muted">{{ $activity->created_at->diffForHumans() }}</td>
                                     <td>
                                         <a href="{{ route('admin.activities.show', $activity) }}"
@@ -1214,16 +1355,6 @@
                 var studentCount = __mapDemographics[cityName] || 0;
                 var cityAcademies = __mapAcademyData[cityName] || [];
 
-                var desc = '<strong>' + cityName + '</strong><br>';
-                desc += studentCount + ' Student' + (studentCount !== 1 ? 's' : '') + '<br>';
-                if (cityAcademies.length > 0) {
-                    cityAcademies.forEach(function (a) {
-                        desc += '<br><strong>' + a.name + '</strong>';
-                        if (a.cohort_names && a.cohort_names.length > 0) {
-                            desc += '<br><em>' + a.cohort_names.join(', ') + '</em>';
-                        }
-                    });
-                }
                 if (studentCount > 0 || cityAcademies.length > 0) {
                     stateData.color = 'rgba(255, 121, 0, 0.4)';
                     stateData.hover_color = 'rgba(255, 121, 0, 1)';
@@ -1239,17 +1370,6 @@
             var loc = simplemaps_countrymap_mapdata.locations[locId];
             var pinCity = loc.name;
             if (pinCity && __mapAcademyData[pinCity]) {
-                var pinAcademies = __mapAcademyData[pinCity];
-                var pinDesc = '<strong>' + pinCity + '</strong>';
-                pinAcademies.forEach(function (a) {
-                    pinDesc += '<br><strong>' + a.name + '</strong> (' + a.students_count + ' students)';
-                    if (a.cohort_names && a.cohort_names.length > 0) {
-                        a.cohort_names.forEach(function (cn) {
-                            pinDesc += '<br>&nbsp;&nbsp;• ' + cn;
-                        });
-                    }
-                });
-                loc.description = pinDesc;
                 loc.color = '#ff7900';
                 loc.url = "javascript:showCityInfoPanel('" + pinCity.replace(/'/g, "\\'") + "');";
             }
@@ -1282,7 +1402,7 @@
             __mapPanelCharts.length = 0;
 
             // Add active class to panel
-            document.getElementById('mapInfoPanel').classList.add('active');
+            panel.classList.add('active');
 
             var html = '<div class="info-header">' +
                 '<span class="region-dot"></span>' +
@@ -1294,7 +1414,7 @@
                 html += '<div class="text-muted small text-center py-4"><i class="bi bi-building" style="font-size:2rem;color:#e5e7eb;"></i><br><span class="mt-2 d-block">No academies in this region yet.</span></div>';
             } else {
                 cityAcademies.forEach(function (a, idx) {
-                    var stats = __academyFullStats[a.name] || { total: 0, gender: {}, education: {}, cohorts: {} };
+                    var stats = __academyFullStats[a.name] || { total: 0, gender: {}, education: {}, age: {}, universities: {}, neighborhoods: {}, cohorts: {}, phone_stats: {orange:0, zain:0, umniah:0} };
                     var maleCount = stats.gender.male || stats.gender.Male || 0;
                     var femaleCount = stats.gender.female || stats.gender.Female || 0;
 
@@ -1305,41 +1425,89 @@
                     // Stats Row
                     html += '<div class="d-flex gap-2 mb-3">';
                     html += '<div class="map-mini-stat"><div class="num" style="color:#ff7900;">' + stats.total + '</div><div class="lbl">Total</div></div>';
-                    html += '<div class="map-mini-stat"><div class="num" style="color:#2C8BFF;">' + maleCount + '</div><div class="lbl"><i class="bi bi-gender-male"></i> Male</div></div>';
-                    html += '<div class="map-mini-stat"><div class="num" style="color:#FF69B4;">' + femaleCount + '</div><div class="lbl"><i class="bi bi-gender-female"></i> Female</div></div>';
-                    html += '<div class="map-mini-stat"><div class="num" style="color:#50be87;">' + a.cohorts_count + '</div><div class="lbl">Cohorts</div></div>';
+                    html += '<div class="map-mini-stat"><div class="num" style="color:#2C8BFF;">' + maleCount + '</div><div class="lbl">Male</div></div>';
+                    html += '<div class="map-mini-stat"><div class="num" style="color:#FF69B4;">' + femaleCount + '</div><div class="lbl">Female</div></div>';
                     html += '</div>';
 
-                    // Gender mini chart
+                    // Gender chart container
                     if (maleCount > 0 || femaleCount > 0) {
-                        html += '<div style="height:110px;margin-bottom:0.75rem;"><canvas id="mapGender-' + idx + '"></canvas></div>';
+                        html += '<div style="height:110px;margin-bottom:1rem;"><canvas id="mapGender-' + idx + '"></canvas></div>';
                     }
 
-                    // Education Tags
-                    var eduKeys = Object.keys(stats.education);
-                    if (eduKeys.length > 0) {
-                        html += '<div class="mb-2"><div style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="bi bi-mortarboard me-1"></i>Education</div>';
-                        eduKeys.forEach(function (k) {
-                            html += '<span class="map-edu-tag">' + k.charAt(0).toUpperCase() + k.slice(1) + ' <strong>' + stats.education[k] + '</strong></span>';
+                    // Age Breakdown
+                    var ageKeys = Object.keys(stats.age);
+                    if (ageKeys.length > 0) {
+                        html += '<div class="rounded-3 py-2 px-2 mb-3" style="background:rgba(75,180,230,0.06);">';
+                        html += '<div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;"><i class="bi bi-bar-chart-fill me-1" style="color:#4bb4e6;"></i>Age Distribution</div>';
+                        var maxAge = Math.max(...Object.values(stats.age)) || 1;
+                        ageKeys.forEach(function(range) {
+                            var cnt = stats.age[range];
+                            var pct = (cnt/maxAge)*100;
+                            html += '<div class="d-flex align-items-center gap-2 mb-1">';
+                            html += '<div style="width:32px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;">' + range + '</div>';
+                            html += '<div class="flex-grow-1" style="height:8px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#4bb4e6,#74c9f0);border-radius:6px;"></div></div>';
+                            html += '<div style="width:20px;font-size:0.7rem;font-weight:700;color:#4bb4e6;flex-shrink:0;">' + cnt + '</div></div>';
                         });
                         html += '</div>';
                     }
 
-                    // Cohort Table
+                    // Universities
+                    var uniKeys = Object.keys(stats.universities);
+                    if (uniKeys.length > 0) {
+                        html += '<div class="rounded-3 py-2 px-2 mb-3" style="background:rgba(108,117,225,0.06);">';
+                        html += '<div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;"><i class="bi bi-bank me-1" style="color:#6c75e1;"></i>Top Universities</div>';
+                        var maxUni = Math.max(...Object.values(stats.universities)) || 1;
+                        uniKeys.forEach(function(uni) {
+                            var cnt = stats.universities[uni];
+                            var pct = (cnt/maxUni)*100;
+                            html += '<div class="d-flex align-items-center gap-2 mb-1">';
+                            html += '<div style="width:80px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + uni + '</div>';
+                            html += '<div class="flex-grow-1" style="height:8px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#6c75e1,#8b92f0);border-radius:6px;"></div></div>';
+                            html += '<div style="width:20px;font-size:0.7rem;font-weight:700;color:#6c75e1;flex-shrink:0;">' + cnt + '</div></div>';
+                        });
+                        html += '</div>';
+                    }
+
+                    // Neighborhoods
+                    var nbKeys = Object.keys(stats.neighborhoods);
+                    if (nbKeys.length > 0) {
+                        html += '<div class="rounded-3 py-2 px-2 mb-3" style="background:rgba(255,121,0,0.06);">';
+                        html += '<div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;"><i class="bi bi-geo-alt me-1" style="color:#ff7900;"></i>Top Neighborhoods</div>';
+                        var maxNb = Math.max(...Object.values(stats.neighborhoods)) || 1;
+                        nbKeys.forEach(function(nb) {
+                            var cnt = stats.neighborhoods[nb];
+                            var pct = (cnt/maxNb)*100;
+                            html += '<div class="d-flex align-items-center gap-2 mb-1">';
+                            html += '<div style="width:80px;font-size:0.63rem;color:#6b7280;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + nb + '</div>';
+                            html += '<div class="flex-grow-1" style="height:8px;background:rgba(0,0,0,0.05);border-radius:6px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#ff7900,#ffa040);border-radius:6px;"></div></div>';
+                            html += '<div style="width:20px;font-size:0.7rem;font-weight:700;color:#ff7900;flex-shrink:0;">' + cnt + '</div></div>';
+                        });
+                        html += '</div>';
+                    }
+
+                    // Phone stats
+                    var ps = stats.phone_stats || {orange:0, zain:0, umniah:0};
+                    if (ps.orange > 0 || ps.zain > 0 || ps.umniah > 0) {
+                        html += '<div class="mb-3"><div class="text-muted mb-2" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;"><i class="bi bi-phone me-1" style="color:#ff7900;"></i>Phone Company</div>';
+                        html += '<div class="d-flex gap-2">';
+                        html += '<div class="flex-fill text-center py-1 rounded" style="background:#fff3e0;font-size:0.7rem;"><span class="fw-bold d-block" style="color:#ff7900;">' + ps.orange + '</span><span class="text-muted">077</span></div>';
+                        html += '<div class="flex-fill text-center py-1 rounded" style="background:#e0f7f5;font-size:0.7rem;"><span class="fw-bold d-block" style="color:#20c997;">' + ps.zain + '</span><span class="text-muted">079</span></div>';
+                        html += '<div class="flex-fill text-center py-1 rounded" style="background:#f3e8ff;font-size:0.7rem;"><span class="fw-bold d-block" style="color:#7c3aed;">' + ps.umniah + '</span><span class="text-muted">078</span></div>';
+                        html += '</div></div>';
+                    }
+
+                    // Cohorts
                     var cohortKeys = Object.keys(stats.cohorts);
                     if (cohortKeys.length > 0) {
                         html += '<div style="font-size:0.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;"><i class="bi bi-list-columns-reverse me-1"></i>Cohorts</div>';
-                        html += '<table class="table table-sm map-cohort-mini mb-0"><thead><tr><th>Name</th><th class="text-center">Total</th><th class="text-center">Accepted</th><th class="text-center">Rejected</th></tr></thead><tbody>';
+                        html += '<table class="table table-sm map-cohort-mini mb-0"><thead><tr><th>Name</th><th class="text-center">Total</th><th class="text-center">Accepted</th></tr></thead><tbody>';
                         cohortKeys.forEach(function (name) {
                             var cs = stats.cohorts[name];
-                            html += '<tr><td class="fw-medium">' + name + '</td>';
-                            html += '<td class="text-center"><span class="badge bg-secondary rounded-pill" style="font-size:0.7rem;">' + (cs.total || 0) + '</span></td>';
-                            html += '<td class="text-center"><span class="badge bg-success rounded-pill" style="font-size:0.7rem;">' + (cs.accepted || 0) + '</span></td>';
-                            html += '<td class="text-center"><span class="badge bg-danger rounded-pill" style="font-size:0.7rem;">' + (cs.rejected || 0) + '</span></td></tr>';
+                            html += '<tr><td>' + name + '</td><td class="text-center">' + (cs.total || 0) + '</td><td class="text-center text-success">' + (cs.accepted || 0) + '</td></tr>';
                         });
                         html += '</tbody></table>';
                     }
-                    html += '</div>';
+                    html += '</div>'; // End academy-item
                 });
             }
 
@@ -1349,7 +1517,7 @@
             }
             if (defaultMsg) defaultMsg.style.display = 'none';
 
-            // Create inline gender charts after DOM update
+            // Create charts
             setTimeout(function () {
                 cityAcademies.forEach(function (a, idx) {
                     var stats = __academyFullStats[a.name] || { gender: {} };
@@ -1365,10 +1533,8 @@
                         __mapPanelCharts.push(chart);
                     }
                 });
-            }, 50);
+            }, 501);
 
-            // Scroll panel to top
-            document.getElementById('mapInfoPanel').scrollTop = 0;
         }
     </script>
     <script src="{{ asset('map/countrymap.js') }}"></script>

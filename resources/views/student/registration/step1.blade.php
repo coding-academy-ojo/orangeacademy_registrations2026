@@ -251,6 +251,53 @@
                         <label class="form-label fw-semibold">GPA</label>
                         <input type="text" name="gpa_value" id="gpa_value" value="{{ old('gpa_value', $profile->gpa_value) }}" class="form-control gpa_value" placeholder="e.g. 3.5, 85%, Excellent, A+">
                     </div>
+
+                    {{-- Section: Health & Accessibility --}}
+                    <div class="col-12 mt-4">
+                        <h5 class="section-title border-bottom pb-2 mb-3">
+                            <i class="bi bi-heart-pulse-fill me-2 text-danger"></i>Health & Accessibility
+                        </h5>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Do you have any accessibility needs? <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-4 mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="has_accessibility_needs" id="access_yes" value="1" {{ old('has_accessibility_needs', $profile->has_accessibility_needs) === true || old('has_accessibility_needs', $profile->has_accessibility_needs) === '1' ? 'checked' : '' }} required>
+                                <label class="form-check-label" for="access_yes">Yes</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="has_accessibility_needs" id="access_no" value="0" {{ old('has_accessibility_needs', $profile->has_accessibility_needs) === false || old('has_accessibility_needs', $profile->has_accessibility_needs) === '0' || $profile->has_accessibility_needs === null ? 'checked' : '' }} required>
+                                <label class="form-check-label" for="access_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6" id="access_details_wrapper" style="display: none;">
+                        <label class="form-label fw-semibold">Please describe your needs</label>
+                        <textarea name="accessibility_details" id="accessibility_details" class="form-control" rows="2" placeholder="Tell us how we can support you...">{{ old('accessibility_details', $profile->accessibility_details) }}</textarea>
+                        @error('accessibility_details')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Do you have any chronic illnesses? <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-4 mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="has_illness" id="illness_yes" value="1" {{ old('has_illness', $profile->has_illness) === true || old('has_illness', $profile->has_illness) === '1' ? 'checked' : '' }} required>
+                                <label class="form-check-label" for="illness_yes">Yes</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="has_illness" id="illness_no" value="0" {{ old('has_illness', $profile->has_illness) === false || old('has_illness', $profile->has_illness) === '0' || $profile->has_illness === null ? 'checked' : '' }} required>
+                                <label class="form-check-label" for="illness_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6" id="illness_details_wrapper" style="display: none;">
+                        <label class="form-label fw-semibold">Please describe your illness</label>
+                        <textarea name="illness_details" id="illness_details" class="form-control" rows="2" placeholder="Important health information...">{{ old('illness_details', $profile->illness_details) }}</textarea>
+                        @error('illness_details')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    </div>
                     {{-- Section: Emergency Contacts / Relatives --}}
                     <div class="col-12 mt-4">
                         <h5 class="section-title border-bottom pb-2 mb-3">
@@ -477,6 +524,33 @@ document.addEventListener('DOMContentLoaded', function () {
         gpaTypeSelect.addEventListener('change', updateGPA);
         updateGPA();
     }
+
+    // --- Health & Accessibility Logic ---
+    const accessYes = document.getElementById('access_yes');
+    const accessNo = document.getElementById('access_no');
+    const accessDetailsWrapper = document.getElementById('access_details_wrapper');
+
+    const illnessYes = document.getElementById('illness_yes');
+    const illnessNo = document.getElementById('illness_no');
+    const illnessDetailsWrapper = document.getElementById('illness_details_wrapper');
+
+    function toggleAccessibility() {
+        if (!accessYes || !accessNo || !accessDetailsWrapper) return;
+        accessDetailsWrapper.style.display = accessYes.checked ? 'block' : 'none';
+    }
+
+    function toggleIllness() {
+        if (!illnessYes || !illnessNo || !illnessDetailsWrapper) return;
+        illnessDetailsWrapper.style.display = illnessYes.checked ? 'block' : 'none';
+    }
+
+    if (accessYes) accessYes.addEventListener('change', toggleAccessibility);
+    if (accessNo) accessNo.addEventListener('change', toggleAccessibility);
+    if (illnessYes) illnessYes.addEventListener('change', toggleIllness);
+    if (illnessNo) illnessNo.addEventListener('change', toggleIllness);
+
+    toggleAccessibility();
+    toggleIllness();
 });
 </script>
 @endsection

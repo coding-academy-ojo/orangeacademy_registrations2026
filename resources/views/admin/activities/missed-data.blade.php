@@ -22,8 +22,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="mb-0">Not Started</h6>
-                                <h3 class="mb-0">{{ $users->filter(fn($u) => $u->registration_progress < 20)->count() }}
-                                </h3>
+                                <h3 class="mb-0">{{ $stats['not_started'] }}</h3>
                             </div>
                             <i class="bi bi-x-circle fs-1 opacity-50"></i>
                         </div>
@@ -36,9 +35,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="mb-0">In Progress</h6>
-                                <h3 class="mb-0">
-                                    {{ $users->filter(fn($u) => $u->registration_progress >= 20 && $u->registration_progress < 100)->count() }}
-                                </h3>
+                                <h3 class="mb-0">{{ $stats['in_progress'] }}</h3>
                             </div>
                             <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
                         </div>
@@ -51,8 +48,7 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="mb-0">Completed</h6>
-                                <h3 class="mb-0">{{ $users->filter(fn($u) => $u->registration_progress == 100)->count() }}
-                                </h3>
+                                <h3 class="mb-0">0</h3> {{-- Since we filtered users < 100% --}}
                             </div>
                             <i class="bi bi-check-circle fs-1 opacity-50"></i>
                         </div>
@@ -64,8 +60,8 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h6 class="mb-0">Total Users</h6>
-                                <h3 class="mb-0">{{ $users->count() }}</h3>
+                                <h6 class="mb-0">Total Incomplete</h6>
+                                <h3 class="mb-0">{{ $stats['total'] }}</h3>
                             </div>
                             <i class="bi bi-people fs-1 opacity-50"></i>
                         </div>
@@ -145,6 +141,9 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $users->links() }}
                 </div>
             </div>
         </div>

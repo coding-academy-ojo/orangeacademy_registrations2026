@@ -136,39 +136,61 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $cohortId = $request->query('cohort_id');
+        $cohort = $cohortId ? \App\Models\Cohort::find($cohortId) : null;
+        
+        $allCohorts = \App\Models\Cohort::with('academy')->orderBy('name', 'desc')->get();
+
+        // Base query for filtering by cohort
+        $cohortFilter = $cohort ? function ($q) use ($cohort) {
+            $q->where('cohort_id', $cohort->id);
+        } : null;
+
         $stats = [
-            'total_users' => User::count(),
-            'pending_enrollments' => Enrollment::where('status', 'applied')->count(),
-            'accepted_enrollments' => Enrollment::where('status', 'accepted')->count(),
-            'pending_assessments' => AssessmentSubmission::where('status', 'submitted')->count(),
-            'unverified_docs' => Document::where('is_verified', false)->count(),
+            'total_users' => $cohort 
+                ? Enrollment::where('cohort_id', $cohort->id)->distinct()->count('user_id')
+                : User::count(),
+            'pending_enrollments' => Enrollment::when($cohort, fn($q) => $q->where('cohort_id', $cohort->id))->where('status', 'applied')->count(),
+            'accepted_enrollments' => Enrollment::when($cohort, fn($q) => $q->where('cohort_id', $cohort->id))->where('status', 'accepted')->count(),
+            'pending_assessments' => $cohort 
+                ? AssessmentSubmission::whereIn('user_id', $userIdsInCohort ?? [])->where('status', 'submitted')->count()
+                : AssessmentSubmission::where('status', 'submitted')->count(),
             'recent_users' => User::latest()->take(5)->get(),
-            'recent_enrollments' => Enrollment::with(['user.profile', 'cohort'])->latest()->take(5)->get(),
+            'recent_enrollments' => Enrollment::with(['user.profile', 'cohort'])->when($cohort, fn($q) => $q->where('cohort_id', $cohort->id))->latest()->take(5)->get(),
         ];
 
         // Chart Data
+        $userIdsInCohort = $cohort ? Enrollment::where('cohort_id', $cohort->id)->pluck('user_id')->toArray() : null;
+
         $genderStats = \App\Models\Profile::selectRaw('gender, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('gender')
             ->groupBy('gender')
             ->pluck('count', 'gender')
             ->toArray();
 
-        $enrollmentStats = Enrollment::selectRaw('status, count(*) as count')
+        $enrollmentStats = Enrollment::when($cohort, fn($q) => $q->where('cohort_id', $cohort->id))
+            ->selectRaw('status, count(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        $academyStats = Enrollment::join('cohorts', 'enrollments.cohort_id', '=', 'cohorts.id')
-            ->join('academies', 'cohorts.academy_id', '=', 'academies.id')
-            ->selectRaw('academies.name as academy, count(enrollments.id) as count')
-            ->groupBy('academies.name')
-            ->pluck('count', 'academy')
-            ->toArray();
+        if ($cohort) {
+            $academyStats = [$cohort->academy->name ?? 'N/A' => count($userIdsInCohort)];
+        } else {
+            $academyStats = Enrollment::join('cohorts', 'enrollments.cohort_id', '=', 'cohorts.id')
+                ->join('academies', 'cohorts.academy_id', '=', 'academies.id')
+                ->selectRaw('academies.name as academy, count(enrollments.id) as count')
+                ->groupBy('academies.name')
+                ->pluck('count', 'academy')
+                ->toArray();
+        }
 
         // Education Level Stats
         $educationStats = \App\Models\Profile::selectRaw('education_level, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('education_level')
             ->groupBy('education_level')
             ->pluck('count', 'education_level')
@@ -176,6 +198,7 @@ class DashboardController extends Controller
 
         // Country Stats
         $countryStats = \App\Models\Profile::selectRaw('country, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('country')
             ->groupBy('country')
             ->pluck('count', 'country')
@@ -183,6 +206,7 @@ class DashboardController extends Controller
 
         // City Stats
         $cityStats = \App\Models\Profile::selectRaw('city, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('city')
             ->groupBy('city')
             ->pluck('count', 'city')
@@ -190,6 +214,7 @@ class DashboardController extends Controller
 
         // Field of Study Stats
         $fieldOfStudyStats = \App\Models\Profile::selectRaw('field_of_study, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('field_of_study')
             ->groupBy('field_of_study')
             ->pluck('count', 'field_of_study')
@@ -197,6 +222,7 @@ class DashboardController extends Controller
 
         // University Stats
         $universityStats = \App\Models\Profile::selectRaw('university, count(*) as count')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))
             ->whereNotNull('university')
             ->where('university', '!=', '')
             ->groupBy('university')
@@ -204,8 +230,9 @@ class DashboardController extends Controller
             ->toArray();
 
         // Age Analysis (18-35)
-        $ageStats = \App\Models\Profile::whereNotNull('date_of_birth')
-            ->selectRaw('
+        $ageStatsQuery = \App\Models\Profile::whereNotNull('date_of_birth')
+            ->when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort));
+        $ageStats = $ageStatsQuery->selectRaw('
                 SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 18 AND 20 THEN 1 ELSE 0 END) as "18-20",
                 SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 21 AND 25 THEN 1 ELSE 0 END) as "21-25",
                 SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 26 AND 30 THEN 1 ELSE 0 END) as "26-30",
@@ -215,11 +242,17 @@ class DashboardController extends Controller
             ->toArray();
 
         // Graduated Chart Data (University Graduates enrolled in Academies)
-        $graduatedStats = Enrollment::join('cohorts', 'enrollments.cohort_id', '=', 'cohorts.id')
+        $graduatedStatsQuery = Enrollment::join('cohorts', 'enrollments.cohort_id', '=', 'cohorts.id')
             ->join('academies', 'cohorts.academy_id', '=', 'academies.id')
             ->join('profiles', 'enrollments.user_id', '=', 'profiles.user_id')
             ->where('profiles.is_graduated', 1)
-            ->whereNotNull('profiles.graduation_year')
+            ->whereNotNull('profiles.graduation_year');
+        
+        if ($cohort) {
+            $graduatedStatsQuery->where('enrollments.cohort_id', $cohort->id);
+        }
+        
+        $graduatedStats = $graduatedStatsQuery
             ->selectRaw('academies.name as academy, count(*) as count')
             ->groupBy('academies.name')
             ->pluck('count', 'academy')
@@ -230,11 +263,11 @@ class DashboardController extends Controller
 
         // Missing Data Stats
         $missingDataStats = [
-            'no_education' => \App\Models\Profile::whereNull('education_level')->orWhere('education_level', '')->count(),
-            'no_country' => \App\Models\Profile::whereNull('country')->orWhere('country', '')->count(),
-            'no_city' => \App\Models\Profile::whereNull('city')->orWhere('city', '')->count(),
-            'no_field_of_study' => \App\Models\Profile::whereNull('field_of_study')->orWhere('field_of_study', '')->count(),
-            'no_nationality' => \App\Models\Profile::whereNull('nationality')->orWhere('nationality', '')->count(),
+            'no_education' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where(fn($q) => $q->whereNull('education_level')->orWhere('education_level', ''))->count(),
+            'no_country' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where(fn($q) => $q->whereNull('country')->orWhere('country', ''))->count(),
+            'no_city' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where(fn($q) => $q->whereNull('city')->orWhere('city', ''))->count(),
+            'no_field_of_study' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where(fn($q) => $q->whereNull('field_of_study')->orWhere('field_of_study', ''))->count(),
+            'no_nationality' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where(fn($q) => $q->whereNull('nationality')->orWhere('nationality', ''))->count(),
         ];
         $academyLocations = \App\Models\Academy::whereNotNull('location')
             ->where('location', '!=', '')
@@ -246,8 +279,14 @@ class DashboardController extends Controller
         $targetCities = array_values(array_unique(array_filter(array_map(function ($city) {
             return ucfirst(strtolower(trim($city)));
         }, $academyLocations))));
-        $cityDemographics = \App\Models\Profile::whereIn('city', collect($targetCities)->map(fn($c) => strtolower($c))->toArray())
-            ->orWhereIn('city', $targetCities)
+        $cityDemographicsQuery = \App\Models\Profile::whereIn('city', collect($targetCities)->map(fn($c) => strtolower($c))->toArray())
+            ->orWhereIn('city', $targetCities);
+        
+        if ($cohort && $userIdsInCohort) {
+            $cityDemographicsQuery->whereIn('user_id', $userIdsInCohort);
+        }
+        
+        $cityDemographics = $cityDemographicsQuery
             ->selectRaw('city, count(*) as count')
             ->groupBy('city')
             ->pluck('count', 'city')
@@ -266,9 +305,13 @@ class DashboardController extends Controller
         foreach ($academies as $academy) {
             $academyName = $academy->name;
 
-            $enrollmentsInAcademy = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
+            $enrollmentQuery = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
                 $q->where('academy_id', $academy->id);
-            })->get();
+            });
+            if ($cohort) {
+                $enrollmentQuery->where('cohort_id', $cohort->id);
+            }
+            $enrollmentsInAcademy = $enrollmentQuery->get();
 
             $userIdsInAcademy = $enrollmentsInAcademy->pluck('user_id')->unique()->toArray();
             $totalRegistrations = count($userIdsInAcademy);
@@ -331,9 +374,13 @@ class DashboardController extends Controller
 
             $cohortStatsArray = [];
             if ($totalRegistrations > 0) {
-                $cohortsData = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
+                $cohortsQuery = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
                     $q->where('academy_id', $academy->id);
-                })
+                });
+                if ($cohort) {
+                    $cohortsQuery->where('cohort_id', $cohort->id);
+                }
+                $cohortsData = $cohortsQuery
                     ->join('cohorts', 'enrollments.cohort_id', '=', 'cohorts.id')
                     ->selectRaw('cohorts.name as cohort_name, enrollments.status, count(*) as count')
                     ->groupBy('cohorts.name', 'enrollments.status')
@@ -370,6 +417,15 @@ class DashboardController extends Controller
                 'universities' => $universityStatsArray,
                 'neighborhoods' => $neighborhoodStatsArray,
                 'cohorts' => $cohortStatsArray,
+                'phone_stats' => [
+                    'orange' => \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)->where('phone', 'like', '077%')->count(),
+                    'zain' => \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)->where('phone', 'like', '079%')->count(),
+                    'umniah' => \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)->where('phone', 'like', '078%')->count(),
+                ],
+                'health_stats' => [
+                    'accessibility' => \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)->where('has_accessibility_needs', 1)->count(),
+                    'illness' => \App\Models\Profile::whereIn('user_id', $userIdsInAcademy)->where('has_illness', 1)->count(),
+                ],
             ];
         }
 
@@ -406,17 +462,21 @@ class DashboardController extends Controller
 
         // Phone company stats
         $phoneStats = [
-            'orange' => \App\Models\Profile::where('phone', 'like', '077%')->count(),
-            'zain' => \App\Models\Profile::where('phone', 'like', '079%')->count(),
-            'umniah' => \App\Models\Profile::where('phone', 'like', '078%')->count(),
+            'orange' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where('phone', 'like', '077%')->count(),
+            'zain' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where('phone', 'like', '079%')->count(),
+            'umniah' => \App\Models\Profile::when($cohort, fn($q) => $q->whereIn('user_id', $userIdsInCohort))->where('phone', 'like', '078%')->count(),
         ];
 
         // Phone stats per academy
         $academyPhoneStats = [];
         foreach ($academies as $academy) {
-            $userIds = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
+            $enrollmentQuery = \App\Models\Enrollment::whereHas('cohort', function ($q) use ($academy) {
                 $q->where('academy_id', $academy->id);
-            })->pluck('user_id')->unique();
+            });
+            if ($cohort) {
+                $enrollmentQuery->where('cohort_id', $cohort->id);
+            }
+            $userIds = $enrollmentQuery->pluck('user_id')->unique();
 
             $academyPhoneStats[$academy->name] = [
                 'orange' => \App\Models\Profile::whereIn('user_id', $userIds)->where('phone', 'like', '077%')->count(),
@@ -458,6 +518,6 @@ class DashboardController extends Controller
                 $progressCounts['in_progress']++;
         }
 
-        return view('admin.dashboard', array_merge($stats, compact('genderStats', 'enrollmentStats', 'academyStats', 'normalizedCityDemographics', 'academyDetailedStats', 'academyMapData', 'recentActivities', 'activityTypeCounts', 'todayActivityCount', 'progressCounts', 'educationStats', 'countryStats', 'cityStats', 'fieldOfStudyStats', 'universityStats', 'missingDataStats', 'ageStats', 'graduatedStats', 'totalGraduated', 'totalAge1835', 'phoneStats', 'academyPhoneStats')));
+        return view('admin.dashboard', array_merge($stats, compact('genderStats', 'enrollmentStats', 'academyStats', 'normalizedCityDemographics', 'academyDetailedStats', 'academyMapData', 'recentActivities', 'activityTypeCounts', 'todayActivityCount', 'progressCounts', 'educationStats', 'countryStats', 'cityStats', 'fieldOfStudyStats', 'universityStats', 'missingDataStats', 'ageStats', 'graduatedStats', 'totalGraduated', 'totalAge1835', 'phoneStats', 'academyPhoneStats', 'allCohorts', 'cohortId', 'cohort')));
     }
 }

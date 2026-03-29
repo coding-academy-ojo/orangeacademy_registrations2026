@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\Document;
 
-class DocumentRejectedNotification extends Notification
+class DocumentRejectedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

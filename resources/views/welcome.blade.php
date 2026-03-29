@@ -1306,7 +1306,7 @@
                     </div>
                     <h1 class="hero-title">
                         <span data-en="Learn to" data-ar="تعلم أن">Learn to</span><br>
-                        <span class="gradient" data-en="Code Your Future" data-ar="تبرمج مستقبلكت">Code Your Future</span>
+                        <span class="gradient" data-en="Code Your Future" data-ar="برمج مستقبلك">Code Your Future</span>
                     </h1>
                     <p class="hero-desc"
                         data-en="Master modern programming languages and frameworks. Join thousands of students transforming their careers with practical, industry-ready skills in PHP, Laravel, Node.js, and more."
@@ -1315,12 +1315,12 @@
                         careers with practical, industry-ready skills in PHP, Laravel, Node.js, and more.</p>
                     <div class="hero-ctas">
                         <a href="{{ route('register') }}" class="btn-hero-primary"
-                            style="padding:14px 32px;font-size:1rem;">
-                            <i class="bi bi-rocket-takeoff"></i>
+                            style="padding:14px 32px;font-size:1rem;" aria-label="Start Learning - Register Now">
+                            <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                             <span data-en="Start Learning" data-ar="ابدأ التعلم">Start Learning</span>
                         </a>
-                        <a href="#programs" class="btn-hero-secondary" style="padding:14px 32px;font-size:1rem;">
-                            <i class="bi bi-play-circle"></i>
+                        <a href="#programs" class="btn-hero-secondary" style="padding:14px 32px;font-size:1rem;" aria-label="Explore our programs">
+                            <i class="bi bi-play-circle" aria-hidden="true"></i>
                             <span data-en="Explore Programs" data-ar="استكشف البرامج">Explore Programs</span>
                         </a>
                     </div>
@@ -1681,7 +1681,7 @@
                     <div class="feature-icon"><i class="bi bi-award"></i></div>
                     <h5 data-en="Certificates" data-ar="شهادات">Certificates</h5>
                     <p data-en="Earn recognized certificates upon completion. Boost your resume and career prospects."
-                        dataار="احصل على شهادات معترف بها عند الإكمال. عزز سيرتك الذاتية وآفاقك المهنية.">Earn recognized
+                        data-ar="احصل على شهادات معترف بها عند الإكمال. عزز سيرتك الذاتية وآفاقك المهنية.">Earn recognized
                         certificates upon completion. Boost your resume and career prospects.</p>
                 </div>
                 <div class="feature-card">

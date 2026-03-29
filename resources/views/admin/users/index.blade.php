@@ -1,14 +1,48 @@
 @extends('layouts.admin')
 @section('page-title', 'Students')
 @section('content')
-    <div class="card">
-        <div class="card-header bg-white py-3">
-            <form class="row g-2 align-items-center mb-0">
-                <div class="col-md-2">
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm"
-                        placeholder="Search...">
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-header bg-white py-4 border-0">
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-filter-circle me-2 text-orange"></i>Quick Academy Filters</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('admin.users') }}" 
+                       class="btn btn-sm {{ !request('academy_id') ? 'btn-dark' : 'btn-outline-secondary' }}" 
+                       style="border-radius: 12px; px-3">All Students</a>
+                    
+                    @php
+                        $academyColors = [
+                            'Amman' => '#10b981', // Green
+                            'Irbid' => '#ef4444', // Red
+                            'Zarqa' => '#3b82f6', // Blue
+                            'Balqa' => '#ff7900', // Orange
+                        ];
+                    @endphp
+
+                    @foreach($academies as $academy)
+                        @php 
+                            $color = $academyColors[$academy->location] ?? '#6c757d'; // Default Gray
+                            $isActive = request('academy_id') == $academy->id;
+                        @endphp
+                        <a href="{{ route('admin.users', array_merge(request()->query(), ['academy_id' => $academy->id])) }}" 
+                           class="btn btn-sm text-white"
+                           style="border-radius: 12px; background-color: {{ $isActive ? $color : 'transparent' }}; border: 2px solid {{ $color }}; color: {{ $isActive ? '#fff' : $color }} !important; px-3;">
+                           {{ $academy->name }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            <form class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Search Students</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="search" value="{{ request('search') }}" class="form-control border-start-0" placeholder="Name, email, or phone...">
+                    </div>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">Academy</label>
                     <select name="academy_id" class="form-select form-select-sm">
                         <option value="">All Academies</option>
                         @foreach($academies as $academy)
@@ -17,6 +51,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">Account Status</label>
                     <select name="status" class="form-select form-select-sm">
                         <option value="">All Status</option>
                         <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Active</option>
@@ -24,6 +59,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">Filtration</label>
                     <select name="filtration_status" class="form-select form-select-sm">
                         <option value="">All Filtration</option>
                         <option value="Pending" {{ request('filtration_status') === 'Pending' ? 'selected' : '' }}>⏳ Pending</option>
@@ -31,34 +67,32 @@
                         <option value="Rejected" {{ request('filtration_status') === 'Rejected' ? 'selected' : '' }}>✗ Rejected</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <select name="gender" class="form-select form-select-sm">
-                        <option value="">All Genders</option>
-                        <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
-                        <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-orange w-100" type="submit"><i class="bi bi-funnel"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#advancedFilters"
-                            aria-expanded="{{ request()->anyFilled(['cohort_id', 'date_from', 'date_to']) ? 'true' : 'false' }}">
+                        <button class="btn btn-sm btn-orange flex-grow-1" type="submit">Apply Filters</button>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
                             <i class="bi bi-sliders"></i>
                         </button>
                         @if(request()->anyFilled(['search', 'status', 'filtration_status', 'gender', 'academy_id', 'cohort_id', 'date_from', 'date_to']))
-                            <a href="{{ route('admin.users') }}" class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-x-circle"></i></a>
+                            <a href="{{ route('admin.users') }}" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></a>
                         @endif
                     </div>
                 </div>
 
-                <div class="col-12 mt-2 p-0">
-                    <div class="collapse {{ request()->anyFilled(['cohort_id', 'date_from', 'date_to']) ? 'show' : '' }}"
-                        id="advancedFilters">
-                        <div class="card card-body bg-light border-0 p-3 mt-2">
+                <div class="col-12 mt-0">
+                    <div class="collapse {{ request()->anyFilled(['cohort_id', 'date_from', 'date_to', 'gender']) ? 'show' : '' }}" id="advancedFilters">
+                        <div class="p-3 border rounded-3 bg-light mt-2">
                             <div class="row g-3">
                                 <div class="col-md-3">
-                                    <label class="form-label small text-muted mb-1">Cohort</label>
+                                    <label class="form-label small text-muted">Gender</label>
+                                    <select name="gender" class="form-select form-select-sm">
+                                        <option value="">All Genders</option>
+                                        <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
+                                        <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small text-muted">Cohort</label>
                                     <select name="cohort_id" class="form-select form-select-sm">
                                         <option value="">All Cohorts</option>
                                         @foreach($cohorts as $cohort)
@@ -67,14 +101,12 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small text-muted mb-1">Joined From</label>
-                                    <input type="date" name="date_from" value="{{ request('date_from') }}"
-                                        class="form-control form-control-sm">
+                                    <label class="form-label small text-muted">Joined From</label>
+                                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control form-control-sm">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small text-muted mb-1">Joined To</label>
-                                    <input type="date" name="date_to" value="{{ request('date_to') }}"
-                                        class="form-control form-control-sm">
+                                    <label class="form-label small text-muted">Joined To</label>
+                                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control form-control-sm">
                                 </div>
                             </div>
                         </div>

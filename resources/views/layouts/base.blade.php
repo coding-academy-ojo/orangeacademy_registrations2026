@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -402,12 +402,69 @@
         a:hover {
             color: var(--orange-dark);
         }
+        /* Skip Link Visibility */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--orange-primary);
+            color: white;
+            padding: 10px 20px;
+            z-index: 9999;
+            transition: top 0.3s;
+            border-radius: 0 0 10px 10px;
+            font-weight: 700;
+        }
+
+        .skip-link:focus {
+            top: 0;
+            outline: none;
+            box-shadow: 0 0 0 4px var(--orange-glow);
+        }
+
+        /* Improved Accessibility Focus States */
+        :focus-visible {
+            outline: 3px solid var(--orange-primary) !important;
+            outline-offset: 3px !important;
+        }
+
+        /* High Contrast Mode Root (for later toggle) */
+        body.high-contrast {
+            --orange-primary: #ff8c00;
+            --orange-bg: #000000;
+            --orange-surface: #121212;
+            --orange-surface-solid: #1a1a1a;
+            --text-heading: #ffffff;
+            --text-body: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --orange-border: #ffffff;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        body.reduced-motion * {
+            animation: none !important;
+            transition: none !important;
+        }
     </style>
     @yield('styles')
 </head>
 
-<body>
-    @yield('body')
+<body class="lang-{{ app()->getLocale() }}">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main id="main-content">
+        @yield('body')
+    </main>
+    @include('components.AccessibilityToolbar')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/ar-dict.js') }}"></script>
     <script src="{{ asset('js/lang.js') }}"></script>

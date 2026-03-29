@@ -2,7 +2,7 @@
 @section('title', 'Create Account — Orange Academy')
 @section('body')
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&family=Fira+Code:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -10,6 +10,8 @@
             --orange-primary: #ff6b35;
             --orange-dark: #e55a2b;
             --orange-light: #ff9d42;
+            --code-bg: #0d1117;
+            --code-border: rgba(255, 121, 0, 0.2);
         }
 
         * {
@@ -22,6 +24,7 @@
             font-family: 'Inter', sans-serif;
             background: #0a0a0f;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         body.lang-ar {
@@ -39,12 +42,11 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
             padding: 2.5rem 2rem;
             background: #0d0d14;
             position: relative;
             overflow: hidden;
+            max-width: 55%;
         }
 
         .auth-form-panel::before {
@@ -62,13 +64,25 @@
             max-width: 420px;
             position: relative;
             z-index: 2;
+            padding: 1.5rem;
+            margin: 0 auto;
         }
 
         .form-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .form-heading {
+            margin-bottom: 0.5rem;
+            padding-top: 1rem;
+        }
+
+        .form-subheading {
+            margin-bottom: 1.5rem;
         }
 
         .form-brand {
@@ -87,11 +101,22 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(255, 121, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .form-brand:hover .form-brand-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 24px rgba(255, 121, 0, 0.5);
         }
 
         .form-brand-icon svg {
             width: 18px;
             color: white;
+            transition: transform 0.3s;
+        }
+
+        .form-brand:hover .form-brand-icon svg {
+            transform: scale(1.2);
         }
 
         .form-brand-name {
@@ -131,7 +156,15 @@
             font-size: 1.9rem;
             font-weight: 800;
             color: white;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-subheading {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
             letter-spacing: -0.02em;
         }
 
@@ -143,15 +176,15 @@
 
         .input-group-custom {
             position: relative;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
         }
 
         .input-label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
@@ -167,6 +200,19 @@
             transform: translateY(-50%);
             color: rgba(255, 255, 255, 0.3);
             font-size: 1rem;
+            z-index: 3;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 16px 14px 42px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
             transition: color 0.2s;
             pointer-events: none;
         }
@@ -290,7 +336,7 @@
 
         .btn-auth {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             background: linear-gradient(135deg, #ff6b35, #f7931e);
             border: none;
             border-radius: 12px;
@@ -301,7 +347,8 @@
             letter-spacing: 0.02em;
             box-shadow: 0 8px 24px rgba(255, 107, 53, 0.35);
             transition: all 0.3s;
-            margin-top: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -341,13 +388,13 @@
             background: rgba(255, 121, 0, 0.1);
             border: 1px solid rgba(255, 121, 0, 0.2);
             color: #ff9d42;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 999px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
 
         .floating-badge .dot-live {
@@ -412,6 +459,38 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .auth-form-panel {
+                padding: 1.5rem 1rem;
+            }
+            
+            .form-container {
+                max-width: 100%;
+            }
+            
+            .code-window {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+            
+            .tech-badges {
+                justify-content: center;
+            }
+            
+            .stats-row {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stat-box {
+                min-width: 80px;
+            }
+            
+            .form-heading {
+                font-size: 1.5rem;
+            }
+        }
+
         .showcase-bg {
             position: absolute;
             inset: 0;
@@ -425,6 +504,137 @@
             background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
             background-size: 50px 50px;
+        }
+
+        /* Animated code blocks */
+        .code-window {
+            background: rgba(13, 17, 23, 0.8);
+            border: 1px solid rgba(255, 121, 0, 0.2);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 121, 0, 0.1);
+        }
+
+        .code-window-dots {
+            display: flex;
+            gap: 6px;
+            padding: 10px;
+            position: absolute;
+            top: 8px;
+            left: 10px;
+        }
+
+        .code-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .code-dot.red { background: #ff5f56; }
+        .code-dot.yellow { background: #ffbd2e; }
+        .code-dot.green { background: #27ca3f; }
+
+        .code-content {
+            padding-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+        }
+
+        .code-keyword { color: #ff7900; }
+        .code-function { color: #61afef; }
+        .code-string { color: #98c379; }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-class { color: #e5c07b; }
+
+        @keyframes typeCursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 16px;
+            background: #ff7900;
+            margin-left: 2px;
+            animation: typeCursor 0.8s step-end infinite;
+            vertical-align: middle;
+        }
+
+        /* Floating tech badges */
+        .tech-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+
+        .tech-badge {
+            background: rgba(255, 121, 0, 0.1);
+            border: 1px solid rgba(255, 121, 0, 0.25);
+            color: #ff9d42;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .tech-badge:hover {
+            background: rgba(255, 121, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 121, 0, 0.3);
+        }
+
+        .tech-badge i {
+            font-size: 1rem;
+        }
+
+        /* Animated stats */
+        .stats-row {
+            display: flex;
+            gap: 1.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            display: block;
+            background: linear-gradient(135deg, #ff7900, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: statPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
         }
 
         .showcase-content {
@@ -488,6 +698,13 @@
             font-size: 1.1rem;
             flex-shrink: 0;
             border: 1px solid rgba(255, 121, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .feature-item:hover .feature-icon {
+            background: rgba(255, 121, 0, 0.2);
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 8px 20px rgba(255, 121, 0, 0.3);
         }
 
         .feature-text h6 {
@@ -504,6 +721,18 @@
             margin: 0;
         }
 
+        .feature-item {
+            transition: transform 0.3s;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+        }
+
+        body.lang-ar .feature-item:hover {
+            transform: translateX(-5px);
+        }
+
         /* Stats row */
         .stats-row {
             display: flex;
@@ -514,6 +743,11 @@
 
         .stat-box {
             text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
         }
 
         .stat-num {
@@ -521,6 +755,15 @@
             font-weight: 800;
             color: white;
             display: block;
+            background: linear-gradient(135deg, #ff7900, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: statPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
         }
 
         .stat-lbl {
@@ -536,6 +779,27 @@
             border-radius: 14px;
             padding: 1.2rem 1.4rem;
             margin-bottom: 2rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 5rem;
+            color: rgba(255, 121, 0, 0.1);
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
+        .testimonial-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 121, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 121, 0, 0.2);
         }
 
         .testimonial-text {
@@ -544,12 +808,16 @@
             line-height: 1.6;
             font-style: italic;
             margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .testimonial-author {
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .avatar {
@@ -563,6 +831,11 @@
             font-weight: 700;
             font-size: 0.85rem;
             color: white;
+            transition: transform 0.3s;
+        }
+
+        .testimonial-card:hover .avatar {
+            transform: scale(1.1);
         }
 
         .author-info .name {
@@ -660,6 +933,7 @@
                             <div class="strength-seg" id="seg3"></div>
                             <div class="strength-seg" id="seg4"></div>
                         </div>
+                        <div style="text-align: right; font-size: 1.2rem; margin-top: 4px;" id="strengthEmoji"></div>
                         @error('password')<span class="invalid-feedback">{{ $message }}</span>@enderror
                     </div>
 
@@ -728,6 +1002,33 @@
                     data-ar="انضم إلى آلاف الطلاب الذين انضموا إلى قطاع التكنولوجيا من خلال برامجنا العملية الموجهة للصناعة.">
                     Join thousands of students who have broken into tech through our hands-on, industry-focused programs.
                 </p>
+
+                {{-- Code Editor Window --}}
+                <div class="code-window">
+                    <div class="code-window-dots">
+                        <span class="code-dot red"></span>
+                        <span class="code-dot yellow"></span>
+                        <span class="code-dot green"></span>
+                    </div>
+                    <div class="code-content">
+                        <span class="code-comment">// Start your coding journey</span><br>
+                        <span class="code-keyword">class</span> <span class="code-class">Student</span> <span class="code-keyword">extends</span> <span class="code-class">Learner</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">public function</span> <span class="code-function">register</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-string">"Orange Academy"</span>;<br>
+                        &nbsp;&nbsp;}<br>
+                        }<br>
+                        <span class="code-class">Student</span>::<span class="code-function">apply</span>()<span class="typing-cursor"></span>
+                    </div>
+                </div>
+
+                {{-- Tech Stack Badges --}}
+                <div class="tech-badges">
+                    <div class="tech-badge"><i class="bi bi-filetype-php"></i> PHP</div>
+                    <div class="tech-badge"><i class="bi bi-hexagon"></i> Laravel</div>
+                    <div class="tech-badge"><i class="bi bi-filetype-js"></i> JavaScript</div>
+                    <div class="tech-badge"><i class="bi bi-database"></i> MySQL</div>
+                    <div class="tech-badge"><i class="bi bi-git"></i> Git</div>
+                </div>
 
                 <div class="feature-list">
                     <div class="feature-item">
@@ -812,18 +1113,30 @@
         const saved = localStorage.getItem('lang') || 'en';
         setLang(saved);
 
-        // Password strength indicator
+        // Password strength indicator with emoji feedback
         const pw = document.getElementById('password');
+        const strengthEmoji = document.getElementById('strengthEmoji');
         if (pw) {
             pw.addEventListener('input', function () {
                 const val = this.value;
                 const segs = [document.getElementById('seg1'), document.getElementById('seg2'),
                 document.getElementById('seg3'), document.getElementById('seg4')];
                 segs.forEach(s => { s.className = 'strength-seg'; });
-                if (val.length === 0) return;
+                if (val.length === 0) {
+                    if (strengthEmoji) strengthEmoji.textContent = '';
+                    return;
+                }
                 const score = [val.length >= 8, /[A-Z]/.test(val), /[0-9]/.test(val), /[^A-Za-z0-9]/.test(val)].filter(Boolean).length;
                 const cls = score <= 1 ? 'weak' : score <= 2 ? 'medium' : score === 3 ? 'medium' : 'strong';
                 for (let i = 0; i < score; i++) segs[i].classList.add(cls);
+                
+                // Emoji feedback
+                if (strengthEmoji) {
+                    if (score <= 1) strengthEmoji.textContent = '🔒';
+                    else if (score === 2) strengthEmoji.textContent = '🔓';
+                    else if (score === 3) strengthEmoji.textContent = '😊';
+                    else strengthEmoji.textContent = '🤩';
+                }
             });
         }
     </script>

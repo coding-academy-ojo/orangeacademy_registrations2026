@@ -168,8 +168,8 @@ class DatabaseSeeder extends Seeder
         }
 
 
-        // 5. Generate 100 Fake Students with Profiles, Documents, Enrollments, Assessments, and Questionnaires
-        User::factory(100)->create(['role' => 'student'])->each(function ($student) use ($cohortList, $assessmentList, $questionnaire, $requirementIds) {
+        // 5. Generate 200 Fake Students with Profiles, Documents, Enrollments, Assessments, and Questionnaires
+        User::factory(200)->create(['role' => 'student'])->each(function ($student) use ($cohortList, $assessmentList, $questionnaire, $requirementIds) {
 
             // Profile
             Profile::factory()->create(['user_id' => $student->id]);

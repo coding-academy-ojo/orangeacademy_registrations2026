@@ -87,6 +87,21 @@
                             <p class="mb-1"><strong>Relation:</strong> {{ ucfirst($user->profile->relative2_relation ?? '-') }}</p>
                             <p class="mb-0"><strong>Phone:</strong> {{ $user->profile->relative2_phone ?? '-' }}</p>
                         </div>
+                        <hr class="my-3">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-danger mb-1">Accessibility Needs</h6>
+                            <p class="mb-1"><strong>Status:</strong> {{ $user->profile->has_accessibility_needs ? 'Yes' : 'No' }}</p>
+                            @if($user->profile->has_accessibility_needs)
+                                <p class="small bg-light p-2 border rounded">{{ $user->profile->accessibility_details }}</p>
+                            @endif
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-danger mb-1">Chronic Illness</h6>
+                            <p class="mb-1"><strong>Status:</strong> {{ $user->profile->has_illness ? 'Yes' : 'No' }}</p>
+                            @if($user->profile->has_illness)
+                                <p class="small bg-light p-2 border rounded">{{ $user->profile->illness_details }}</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

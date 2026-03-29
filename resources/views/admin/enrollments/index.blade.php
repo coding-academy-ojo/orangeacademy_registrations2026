@@ -1,16 +1,51 @@
 @extends('layouts.admin')
 @section('page-title', 'Enrollments')
 @section('content')
-    <div class="card">
-        <div class="card-header bg-white py-3">
-            <form class="d-flex gap-2">
-                <select name="status" class="form-select form-select-sm" style="width:auto;">
-                    <option value="">All Status</option>
-                    @foreach(['applied', 'accepted', 'rejected', 'enrolled', 'graduated', 'dropped'] as $s)
-                        <option value="{{ $s }}" {{ request('status') == $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="mb-3">
+                <h6 class="fw-bold mb-3"><i class="bi bi-filter-circle me-2 text-orange"></i>Quick Academy Filters</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('admin.enrollments') }}" class="btn btn-sm {{ !request('academy_id') ? 'btn-orange' : 'btn-outline-secondary' }}" style="border-radius: 8px;">All</a>
+                    @foreach($academies->take(4) as $academy)
+                        <a href="{{ route('admin.enrollments', array_merge(request()->query(), ['academy_id' => $academy->id])) }}" 
+                           class="btn btn-sm {{ request('academy_id') == $academy->id ? 'btn-orange' : 'btn-outline-secondary' }}"
+                           style="border-radius: 8px;">
+                           {{ $academy->name }}
+                        </a>
                     @endforeach
-                </select>
-                <button class="btn btn-sm btn-orange">Filter</button>
+                </div>
+            </div>
+
+            <form class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0" placeholder="Search student or email..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="academy_id" class="form-select form-select-sm">
+                        <option value="">All Academies</option>
+                        @foreach($academies as $a)
+                            <option value="{{ $a->id }}" {{ request('academy_id') == $a->id ? 'selected' : '' }}>{{ $a->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Status</option>
+                        @foreach(['applied', 'accepted', 'rejected', 'enrolled', 'graduated', 'dropped'] as $s)
+                            <option value="{{ $s }}" {{ request('status') == $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-sm btn-orange px-4">Filter</button>
+                    @if(request()->anyFilled(['search', 'academy_id', 'status']))
+                        <a href="{{ route('admin.enrollments') }}" class="btn btn-sm btn-link text-muted">Clear</a>
+                    @endif
+                </div>
             </form>
         </div>
         <div class="card-body p-0">

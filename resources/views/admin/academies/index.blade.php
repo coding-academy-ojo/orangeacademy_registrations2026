@@ -7,7 +7,7 @@
                 class="bi bi-plus-circle me-1"></i>New Academy</a>
     </div>
     <div class="row g-3">
-        @forelse($academies as $a)
+        @forelse ($academies as $a)
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100">
                     <div class="card-body">

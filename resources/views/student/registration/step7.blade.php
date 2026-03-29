@@ -51,6 +51,37 @@
                                 ({{ ucwords(str_replace('_', ' ', $user->profile->gpa_type)) }})</div>
                         @endif
 
+                        {{-- Health & Accessibility Review --}}
+                        <div class="col-12 mt-3 pt-2 border-top">
+                            <h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="bi bi-heart-pulse text-orange me-2"></i>Health & Accessibility</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded border border-light-subtle h-100">
+                                        <div class="fw-bold small text-secondary mb-1">Accessibility Needs</div>
+                                        <div>
+                                            @if($user->profile->has_accessibility_needs)
+                                                <span class="text-danger fw-bold">Yes:</span> {{ $user->profile->accessibility_details }}
+                                            @else
+                                                <span class="text-success">None</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 bg-light rounded border border-light-subtle h-100">
+                                        <div class="fw-bold small text-secondary mb-1">Chronic Illness</div>
+                                        <div>
+                                            @if($user->profile->has_illness)
+                                                <span class="text-danger fw-bold">Yes:</span> {{ $user->profile->illness_details }}
+                                            @else
+                                                <span class="text-success">None</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Emergency Contacts Review --}}
                         <div class="col-12 mt-3 pt-2 border-top">
                             <h6 class="fw-bold mb-2" style="font-size: 0.85rem;"><i class="bi bi-people text-orange me-2"></i>Emergency Contacts</h6>

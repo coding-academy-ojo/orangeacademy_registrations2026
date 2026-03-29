@@ -161,8 +161,9 @@
                                             class="mx-1">•</span> {{ $course['desc'] }}</p>
 
                                     <a href="{{ $course['link'] }}" target="_blank"
-                                        class="modern-btn mb-4 w-100 text-center text-decoration-none fw-bold shadow-sm">
-                                        <i class="bi bi-arrow-up-right-circle me-2"></i> Take Course
+                                        class="modern-btn mb-4 w-100 text-center text-decoration-none fw-bold shadow-sm"
+                                        aria-label="Take {{ $course['title'] }} course on Orange Coursat">
+                                        <i class="bi bi-arrow-up-right-circle me-2" aria-hidden="true"></i> Take Course
                                     </a>
 
                                     <div

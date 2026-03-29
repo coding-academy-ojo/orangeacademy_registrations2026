@@ -50,6 +50,7 @@
                         </thead>
                         <tbody>
                             @forelse($activities as $activity)
+                            
                                 <tr>
                                     <td>{{ $activity->created_at->format('Y-m-d H:i:s') }}</td>
                                     <td>

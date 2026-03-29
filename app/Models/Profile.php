@@ -42,12 +42,18 @@ class Profile extends Model
         'relative2_name',
         'relative2_relation',
         'relative2_phone',
+        'has_accessibility_needs',
+        'accessibility_details',
+        'has_illness',
+        'illness_details',
     ];
     protected $casts = [
         'date_of_birth' => 'date',
         'phone_verified' => 'boolean',
         'phone_verified_at' => 'datetime',
         'is_graduated' => 'boolean',
+        'has_accessibility_needs' => 'boolean',
+        'has_illness' => 'boolean',
     ];
     public function user()
     {
